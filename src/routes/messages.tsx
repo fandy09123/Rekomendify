@@ -1,6 +1,6 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { PageShell } from "@/components/rekomendify";
-import { MessageSquare } from "lucide-react";
+import { MessageSquare, Bell } from "lucide-react";
 
 export const Route = createFileRoute("/messages")({
   head: () => ({
