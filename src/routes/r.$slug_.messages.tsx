@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { listRegionInfoPosts } from "@/lib/public.functions";
 import { PageShell } from "@/components/rekomendify";
 import { MediaGallery } from "@/components/media-gallery";
-import { MessageSquare, ArrowLeft } from "lucide-react";
+import { MessageSquare, ArrowLeft, Bell } from "lucide-react";
 
 export const Route = createFileRoute("/r/$slug_/messages")({
   loader: async ({ context, params }) => {
