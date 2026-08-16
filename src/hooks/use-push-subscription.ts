@@ -5,6 +5,7 @@ import {
   setRegionFollow,
   deactivatePushSubscription,
 } from "@/lib/push.functions";
+import { DEFAULT_VAPID_PUBLIC_KEY } from "@/lib/push-config";
 
 /**
  * State langganan Web Push untuk satu perangkat.
