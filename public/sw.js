@@ -6,8 +6,8 @@
  *   - API/Supabase/server function: network-only (tidak di-cache)
  */
 
-// v2 menghapus respons server function yang sempat tersimpan oleh worker v1.
-const CACHE_VERSION = "v2";
+// v3 menambahkan inbox notifikasi lokal (IndexedDB) pada handler push.
+const CACHE_VERSION = "v3";
 const STATIC_CACHE = `rekomendify-static-${CACHE_VERSION}`;
 const FONT_CACHE   = `rekomendify-fonts-${CACHE_VERSION}`;
 
