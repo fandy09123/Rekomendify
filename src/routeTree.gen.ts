@@ -15,6 +15,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as BantuanRouteImport } from './routes/bantuan'
 import { Route as ExploreRouteImport } from './routes/explore'
 import { Route as MessagesRouteImport } from './routes/messages'
+import { Route as NotifikasiRouteImport } from './routes/notifikasi'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as SavedRouteImport } from './routes/saved'
 import { Route as ScanRouteImport } from './routes/scan'
@@ -65,6 +66,11 @@ const ExploreRoute = ExploreRouteImport.update({
 const MessagesRoute = MessagesRouteImport.update({
   id: '/messages',
   path: '/messages',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const NotifikasiRoute = NotifikasiRouteImport.update({
+  id: '/notifikasi',
+  path: '/notifikasi',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
@@ -186,6 +192,7 @@ export interface FileRoutesByFullPath {
   '/bantuan': typeof BantuanRoute
   '/explore': typeof ExploreRoute
   '/messages': typeof MessagesRoute
+  '/notifikasi': typeof NotifikasiRoute
   '/reset-password': typeof ResetPasswordRoute
   '/saved': typeof SavedRoute
   '/scan': typeof ScanRoute
@@ -215,6 +222,7 @@ export interface FileRoutesByTo {
   '/bantuan': typeof BantuanRoute
   '/explore': typeof ExploreRoute
   '/messages': typeof MessagesRoute
+  '/notifikasi': typeof NotifikasiRoute
   '/reset-password': typeof ResetPasswordRoute
   '/saved': typeof SavedRoute
   '/scan': typeof ScanRoute
@@ -245,6 +253,7 @@ export interface FileRoutesById {
   '/bantuan': typeof BantuanRoute
   '/explore': typeof ExploreRoute
   '/messages': typeof MessagesRoute
+  '/notifikasi': typeof NotifikasiRoute
   '/reset-password': typeof ResetPasswordRoute
   '/saved': typeof SavedRoute
   '/scan': typeof ScanRoute
@@ -276,6 +285,7 @@ export interface FileRouteTypes {
     | '/bantuan'
     | '/explore'
     | '/messages'
+    | '/notifikasi'
     | '/reset-password'
     | '/saved'
     | '/scan'
@@ -305,6 +315,7 @@ export interface FileRouteTypes {
     | '/bantuan'
     | '/explore'
     | '/messages'
+    | '/notifikasi'
     | '/reset-password'
     | '/saved'
     | '/scan'
@@ -334,6 +345,7 @@ export interface FileRouteTypes {
     | '/bantuan'
     | '/explore'
     | '/messages'
+    | '/notifikasi'
     | '/reset-password'
     | '/saved'
     | '/scan'
@@ -365,6 +377,7 @@ export interface RootRouteChildren {
   BantuanRoute: typeof BantuanRoute
   ExploreRoute: typeof ExploreRoute
   MessagesRoute: typeof MessagesRoute
+  NotifikasiRoute: typeof NotifikasiRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   SavedRoute: typeof SavedRoute
   ScanRoute: typeof ScanRoute
@@ -424,6 +437,13 @@ declare module '@tanstack/react-router' {
       path: '/messages'
       fullPath: '/messages'
       preLoaderRoute: typeof MessagesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/notifikasi': {
+      id: '/notifikasi'
+      path: '/notifikasi'
+      fullPath: '/notifikasi'
+      preLoaderRoute: typeof NotifikasiRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/reset-password': {
@@ -622,6 +642,7 @@ const rootRouteChildren: RootRouteChildren = {
   BantuanRoute: BantuanRoute,
   ExploreRoute: ExploreRoute,
   MessagesRoute: MessagesRoute,
+  NotifikasiRoute: NotifikasiRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   SavedRoute: SavedRoute,
   ScanRoute: ScanRoute,
