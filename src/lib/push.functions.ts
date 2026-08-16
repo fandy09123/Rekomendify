@@ -24,13 +24,15 @@ const SubscriptionInput = z.object({
 
 /** Public VAPID key — memang dirancang untuk dipakai di browser. */
 export const getPushConfig = createServerFn({ method: "GET" }).handler(async () => {
+  const { DEFAULT_VAPID_PUBLIC_KEY } = await import("@/lib/push-config");
   const publicKey =
     process.env["VAPID_PUBLIC_KEY"] ??
     process.env["VITE_VAPID_PUBLIC_KEY"] ??
     ((import.meta as any)?.env?.VITE_VAPID_PUBLIC_KEY as string | undefined) ??
-    null;
+    DEFAULT_VAPID_PUBLIC_KEY;
   return { publicKey, enabled: Boolean(publicKey) };
 });
+
 
 async function admin() {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
