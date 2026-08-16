@@ -5,6 +5,7 @@ import {
   setRegionFollow,
   deactivatePushSubscription,
 } from "@/lib/push.functions";
+import { DEFAULT_VAPID_PUBLIC_KEY } from "@/lib/push-config";
 
 /**
  * State langganan Web Push untuk satu perangkat.
@@ -153,8 +154,9 @@ export function usePushSubscription(): PushState {
       try {
         const cfg = await getPushConfig();
         if (!alive) return;
-        publicKeyRef.current = cfg.publicKey;
-        setConfigured(Boolean(cfg.enabled));
+        publicKeyRef.current = cfg.publicKey ?? DEFAULT_VAPID_PUBLIC_KEY;
+        setConfigured(Boolean(publicKeyRef.current));
+
 
         const reg = await getSwRegistrationWithTimeout(2500);
         if (reg) {
@@ -195,14 +197,35 @@ export function usePushSubscription(): PushState {
 
     reg = await ensureActiveServiceWorker(reg);
 
+    const appServerKey = urlBase64ToUint8Array(key) as unknown as BufferSource;
+
+    // Langganan lama bisa saja dibuat dengan VAPID public key sebelumnya.
+    // Bila kuncinya berbeda, lepas dulu agar tidak menghasilkan langganan
+    // yang tidak bisa dikirimi push oleh server (410/403).
+    let existing = await reg.pushManager.getSubscription();
+    if (existing) {
+      const existingKey = bufferToB64url(existing.options?.applicationServerKey ?? null);
+      const wantedKey = key.trim().replace(/=+$/, "").replace(/\+/g, "-").replace(/\//g, "_");
+      if (existingKey && existingKey !== wantedKey) {
+        try {
+          await deactivatePushSubscription({ data: { endpoint: existing.endpoint } });
+        } catch {
+          // abaikan: pembersihan sisi server bersifat best-effort
+        }
+        await existing.unsubscribe().catch(() => {});
+        existing = null;
+      }
+    }
+
     const sub =
-      (await reg.pushManager.getSubscription()) ??
+      existing ??
       (await reg.pushManager.subscribe({
         userVisibleOnly: true,
-        applicationServerKey: urlBase64ToUint8Array(key) as unknown as BufferSource,
+        applicationServerKey: appServerKey,
       }));
     setSubscribed(true);
     return toPayload(sub);
+
   }, [supported]);
 
   const enable = useCallback(async () => {
