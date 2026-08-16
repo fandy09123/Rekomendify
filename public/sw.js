@@ -148,9 +148,59 @@ self.addEventListener("fetch", (event) => {
   );
 });
 
+// ── Inbox notifikasi lokal (IndexedDB) ───────────────────────────────────────
+// Ditulis dari dalam Service Worker supaya riwayat tetap terisi walau tidak ada
+// tab Rekomendify yang terbuka saat push tiba. Tidak menyimpan data sensitif.
+const INBOX_DB = "rekomendify-inbox";
+const INBOX_STORE = "notifications";
+const INBOX_LIMIT = 200;
+
+function inboxOpen() {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open(INBOX_DB, 1);
+    req.onupgradeneeded = () => {
+      const db = req.result;
+      if (!db.objectStoreNames.contains(INBOX_STORE)) {
+        const store = db.createObjectStore(INBOX_STORE, { keyPath: "id" });
+        store.createIndex("receivedAt", "receivedAt");
+      }
+    };
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+async function inboxSave(item) {
+  const db = await inboxOpen();
+  await new Promise((resolve, reject) => {
+    const t = db.transaction(INBOX_STORE, "readwrite");
+    t.objectStore(INBOX_STORE).put(item);
+    t.oncomplete = resolve;
+    t.onerror = () => reject(t.error);
+  });
+  // Pangkas riwayat agar penyimpanan perangkat tidak tumbuh tanpa batas.
+  await new Promise((resolve) => {
+    const t = db.transaction(INBOX_STORE, "readwrite");
+    const store = t.objectStore(INBOX_STORE);
+    const req = store.getAll();
+    req.onsuccess = () => {
+      const all = (req.result || []).sort((a, b) => b.receivedAt - a.receivedAt);
+      for (const old of all.slice(INBOX_LIMIT)) store.delete(old.id);
+    };
+    t.oncomplete = resolve;
+    t.onerror = resolve;
+  });
+  db.close();
+}
+
+async function notifyClients(item) {
+  const clients = await self.clients.matchAll({ type: "window", includeUncontrolled: true });
+  for (const client of clients) client.postMessage({ type: "rekomendify:push", item });
+}
+
 // ── Web Push ─────────────────────────────────────────────────────────────────
-// Ditambahkan tanpa mengubah strategi cache di atas: handler push dan
-// notificationclick berdiri sendiri dan tidak menyentuh alur fetch/offline.
+// Handler push berdiri sendiri di worker utama (scope "/"), tidak bergantung
+// pada React maupun tab yang terbuka.
 self.addEventListener("push", (event) => {
   let payload = {};
   try {
@@ -160,16 +210,61 @@ self.addEventListener("push", (event) => {
   }
 
   const title = payload.title || "Rekomendify";
+  const url = payload.url || "/";
+  const tag = payload.tag || "rekomendify";
   const options = {
     body: payload.body || "",
     icon: "/icon-192.png",
     badge: "/icon-192.png",
-    tag: payload.tag || "rekomendify",
+    tag,
     renotify: true,
-    data: { url: payload.url || "/" },
+    data: { url },
   };
 
-  event.waitUntil(self.registration.showNotification(title, options));
+  // Semua pekerjaan async dibungkus satu waitUntil: kegagalan penulisan inbox
+  // tidak boleh membatalkan tampilnya notifikasi.
+  event.waitUntil(
+    (async () => {
+      const item = {
+        id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+        title,
+        body: payload.body || "",
+        url,
+        tag,
+        regionSlug: payload.regionSlug || null,
+        type: payload.entityType || payload.type || null,
+        receivedAt: Date.now(),
+        read: false,
+      };
+      try {
+        await inboxSave(item);
+      } catch {
+        /* IndexedDB tidak tersedia — abaikan, notifikasi tetap tampil */
+      }
+      try {
+        await notifyClients(item);
+      } catch {
+        /* abaikan */
+      }
+      await self.registration.showNotification(title, options);
+    })(),
+  );
+});
+
+// Sebagian browser merotasi endpoint push. Berlangganan ulang dengan kunci yang
+// sama; halaman akan menyinkronkan endpoint baru ke server saat dibuka lagi.
+self.addEventListener("pushsubscriptionchange", (event) => {
+  event.waitUntil(
+    (async () => {
+      try {
+        const key = event.oldSubscription?.options?.applicationServerKey;
+        if (!key) return;
+        await self.registration.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: key });
+      } catch {
+        /* abaikan: pengguna akan disinkronkan ulang saat membuka aplikasi */
+      }
+    })(),
+  );
 });
 
 self.addEventListener("notificationclick", (event) => {
