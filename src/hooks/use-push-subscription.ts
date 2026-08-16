@@ -153,8 +153,9 @@ export function usePushSubscription(): PushState {
       try {
         const cfg = await getPushConfig();
         if (!alive) return;
-        publicKeyRef.current = cfg.publicKey;
-        setConfigured(Boolean(cfg.enabled));
+        publicKeyRef.current = cfg.publicKey ?? DEFAULT_VAPID_PUBLIC_KEY;
+        setConfigured(Boolean(publicKeyRef.current));
+
 
         const reg = await getSwRegistrationWithTimeout(2500);
         if (reg) {
