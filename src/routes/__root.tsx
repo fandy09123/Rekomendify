@@ -106,13 +106,34 @@ function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const router = useRouter();
 
-  // Registrasi Service Worker untuk PWA
+  // Registrasi Service Worker untuk PWA + Web Push.
+  // `updateViaCache: "none"` mencegah browser memakai sw.js lama dari HTTP cache,
+  // dan `update()` saat tab kembali aktif memastikan perangkat yang masih
+  // menjalankan worker versi lama (tanpa handler push) segera diperbarui.
   useEffect(() => {
     if (typeof window === "undefined") return;
     if (!("serviceWorker" in navigator)) return;
+
+    let reg: ServiceWorkerRegistration | null = null;
+    let last = 0;
+    const check = () => {
+      if (!reg || document.visibilityState !== "visible") return;
+      const now = Date.now();
+      if (now - last < 60_000) return; // hindari update loop
+      last = now;
+      reg.update().catch(() => {});
+    };
+
     navigator.serviceWorker
-      .register("/sw.js", { scope: "/" })
+      .register("/sw.js", { scope: "/", updateViaCache: "none" })
+      .then((r) => {
+        reg = r;
+        last = Date.now();
+      })
       .catch((err) => console.warn("[SW] Registrasi gagal:", err));
+
+    document.addEventListener("visibilitychange", check);
+    return () => document.removeEventListener("visibilitychange", check);
   }, []);
 
   useEffect(() => {
