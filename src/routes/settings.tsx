@@ -65,6 +65,9 @@ function Settings() {
           <Link to="/bantuan" className="block hover:bg-muted/50">
             <Row icon={HelpCircle} label="Pusat Bantuan" desc="FAQ dan kontak bantuan" />
           </Link>
+          <Link to="/privasi" className="block hover:bg-muted/50">
+            <Row icon={ShieldCheck} label="Privasi & Izin" desc="Izin yang dipakai Rekomendify dan alasannya" />
+          </Link>
         </div>
 
         <p className="mt-6 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Hubungi kami</p>
