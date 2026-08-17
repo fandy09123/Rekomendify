@@ -6,8 +6,8 @@
  *   - API/Supabase/server function: network-only (tidak di-cache)
  */
 
-// v3 menambahkan inbox notifikasi lokal (IndexedDB) pada handler push.
-const CACHE_VERSION = "v3";
+// v4: showNotification() dipanggil sebelum penulisan inbox pada handler push.
+const CACHE_VERSION = "v4";
 const STATIC_CACHE = `rekomendify-static-${CACHE_VERSION}`;
 const FONT_CACHE   = `rekomendify-fonts-${CACHE_VERSION}`;
 
