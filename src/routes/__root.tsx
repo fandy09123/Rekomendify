@@ -14,6 +14,7 @@ import { reportLovableError } from "../lib/lovable-error-reporting";
 import { Toaster } from "@/components/ui/sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { PwaInstallBanner } from "@/components/pwa-install-banner";
+import { OnboardingGate } from "@/components/onboarding-gate";
 
 function NotFoundComponent() {
   return (
@@ -150,6 +151,7 @@ function RootComponent() {
       <Outlet />
       <Toaster />
       <PwaInstallBanner />
+      <OnboardingGate />
     </QueryClientProvider>
   );
 }

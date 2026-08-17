@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { PageShell } from "@/components/rekomendify";
-import { QrCode, AlertTriangle, X } from "lucide-react";
+import { QrCode, AlertTriangle, X, Camera } from "lucide-react";
 
 export const Route = createFileRoute("/scan")({
   head: () => ({
@@ -18,11 +18,14 @@ function ScanPage() {
   const containerId = "qr-reader";
   const scannerRef = useRef<any>(null);
   const [status, setStatus] = useState<"idle" | "starting" | "scanning" | "error">("idle");
+  // Kamera baru dinyalakan setelah pengguna menekan tombol (just-in-time permission).
+  const [armed, setArmed] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [rejected, setRejected] = useState<null | { url: string; reason: string }>(null);
   const stoppedRef = useRef(false);
 
   useEffect(() => {
+    if (!armed) return;
     let cancelled = false;
     stoppedRef.current = false;
 
@@ -56,7 +59,7 @@ function ScanPage() {
       stopScanner();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [armed]);
 
   async function stopScanner() {
     if (stoppedRef.current) return;
@@ -124,9 +127,32 @@ function ScanPage() {
           Arahkan kamera ke QR resmi Rekomendify. QR dari domain lain akan ditolak.
         </p>
 
-        <div className="mt-5 overflow-hidden rounded-3xl border border-border bg-black">
-          <div id={containerId} className="aspect-square w-full" />
-        </div>
+        {!armed ? (
+          <div className="mt-5 rounded-3xl border border-border bg-card p-5">
+            <div className="flex items-start gap-3">
+              <span className="grid size-10 shrink-0 place-items-center rounded-2xl bg-accent/12 text-accent">
+                <Camera className="size-5" />
+              </span>
+              <div className="min-w-0">
+                <p className="text-sm font-semibold">Rekomendify membutuhkan kamera untuk memindai QR Code.</p>
+                <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                  Kamera hanya aktif di halaman ini dan gambarnya diproses langsung di perangkat Anda —
+                  tidak diunggah ke mana pun. Setelah menekan tombol, browser akan menanyakan izin.
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={() => setArmed(true)}
+              className="mt-4 w-full rounded-full bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground"
+            >
+              Buka Kamera
+            </button>
+          </div>
+        ) : (
+          <div className="mt-5 overflow-hidden rounded-3xl border border-border bg-black">
+            <div id={containerId} className="aspect-square w-full" />
+          </div>
+        )}
 
         {status === "starting" && (
           <p className="mt-3 text-center text-sm text-muted-foreground">Menyiapkan kamera…</p>
@@ -138,8 +164,10 @@ function ScanPage() {
           <div className="mt-4 rounded-2xl border border-destructive/40 bg-destructive/5 p-4 text-sm">
             <p className="font-semibold text-destructive">Kamera tidak dapat diakses</p>
             <p className="mt-1 text-muted-foreground">{errorMsg}</p>
-            <p className="mt-2 text-xs text-muted-foreground">
-              Pastikan Anda mengizinkan akses kamera pada browser dan membuka situs via HTTPS.
+            <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+              Izin kamera mungkin sedang ditolak. Buka pengaturan situs di browser (ikon gembok pada address
+              bar → Kamera) lalu izinkan, dan pastikan situs dibuka lewat HTTPS. Anda tetap bisa membuka
+              wilayah tanpa memindai QR.
             </p>
           </div>
         )}
