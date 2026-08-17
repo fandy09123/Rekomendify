@@ -40,14 +40,22 @@ export function NearbySwitch({
           {state === "loading" ? <Loader2 className="size-3.5 animate-spin" /> : <MapPin className="size-3.5" />} Terdekat
         </button>
       </div>
+      {state === "idle" && (
+        <p className="mt-2 text-xs text-muted-foreground">
+          Pilih “Terdekat” untuk mengurutkan tempat berdasarkan jarak. Browser akan menanyakan izin lokasi, dan
+          posisi Anda hanya dipakai di perangkat ini untuk menghitung jarak.
+        </p>
+      )}
       {state === "denied" && (
         <p className="mt-2 text-xs text-muted-foreground">
-          Aktifkan izin lokasi di browser untuk melihat tempat terdekat. Daftar tetap bisa dijelajahi seperti biasa.
+          Aktifkan izin lokasi di browser (ikon gembok pada address bar → Lokasi) untuk melihat tempat terdekat.
+          Daftar tetap bisa dijelajahi seperti biasa.
         </p>
       )}
       {state === "unsupported" && (
         <p className="mt-2 text-xs text-muted-foreground">Perangkat ini belum mendukung deteksi lokasi.</p>
       )}
+
     </div>
   );
 }
