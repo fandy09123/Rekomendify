@@ -6,8 +6,8 @@
  *   - API/Supabase/server function: network-only (tidak di-cache)
  */
 
-// v3 menambahkan inbox notifikasi lokal (IndexedDB) pada handler push.
-const CACHE_VERSION = "v3";
+// v4: showNotification() dipanggil sebelum penulisan inbox pada handler push.
+const CACHE_VERSION = "v4";
 const STATIC_CACHE = `rekomendify-static-${CACHE_VERSION}`;
 const FONT_CACHE   = `rekomendify-fonts-${CACHE_VERSION}`;
 
@@ -221,10 +221,19 @@ self.addEventListener("push", (event) => {
     data: { url },
   };
 
-  // Semua pekerjaan async dibungkus satu waitUntil: kegagalan penulisan inbox
-  // tidak boleh membatalkan tampilnya notifikasi.
+  // URUTAN PENTING (Chrome Android):
+  // showNotification() dipanggil PALING AWAL. Bila worker menunggu IndexedDB
+  // lebih dulu, sistem bisa mematikan worker sebelum notifikasi tampil —
+  // gejalanya notifikasi baru muncul saat aplikasi dibuka kembali.
+  // Penulisan inbox dilakukan setelahnya dan kegagalannya diabaikan.
   event.waitUntil(
     (async () => {
+      try {
+        await self.registration.showNotification(title, options);
+      } catch {
+        /* jangan pernah membuat handler push gagal total */
+      }
+
       const item = {
         id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
         title,
@@ -239,14 +248,13 @@ self.addEventListener("push", (event) => {
       try {
         await inboxSave(item);
       } catch {
-        /* IndexedDB tidak tersedia — abaikan, notifikasi tetap tampil */
+        /* IndexedDB tidak tersedia — abaikan, notifikasi sudah tampil */
       }
       try {
         await notifyClients(item);
       } catch {
         /* abaikan */
       }
-      await self.registration.showNotification(title, options);
     })(),
   );
 });
