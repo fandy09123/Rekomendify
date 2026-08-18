@@ -1,22 +1,22 @@
 /**
- * LocationCombobox — Searchable single-select untuk satu Location.
- * LocationMultiSelect — Searchable multi-select (maks. N) untuk target Location banner.
+ * LocationCombobox — pencarian + pilih satu Location.
+ * LocationMultiSelect — pencarian + pilih beberapa Location (maks. N).
  *
- * Keduanya reuse komponen Command (cmdk) + Popover yang sudah tersedia di /components/ui.
- * Tidak ada perubahan backend/API. Semua filtering dilakukan di frontend dari data yang sudah dimuat.
+ * CATATAN PENTING (perbaikan mobile):
+ * Versi sebelumnya membungkus input pencarian di dalam Radix Popover + cmdk.
+ * Popover itu dirender lewat portal ke <body>, sementara dialog iklan adalah
+ * overlay `fixed` buatan sendiri. Kombinasi focus-trap Popover, DismissableLayer
+ * (pointerdown di document) dan overlay tersebut membuat Chrome Android
+ * kehilangan fokus tepat setelah input disentuh, sehingga keyboard tidak pernah
+ * bertahan dan admin tidak bisa mengetik.
+ *
+ * Sekarang input dirender inline (tanpa portal, tanpa focus trap, tanpa cmdk),
+ * jadi satu ketukan langsung memunculkan keyboard di HP maupun desktop.
+ * Semua filtering tetap di frontend dari data yang sudah dimuat.
  */
 
-import { useState, useMemo } from "react";
-import { Check, ChevronsUpDown, X, Plus, Search } from "lucide-react";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from "@/components/ui/command";
+import { useId, useMemo, useState } from "react";
+import { Check, X, Search } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export interface LocationOption {
@@ -25,13 +25,67 @@ export interface LocationOption {
   category?: string | null;
 }
 
+const norm = (s: string) =>
+  s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, " ").trim();
+
+function useFiltered(locations: LocationOption[], q: string) {
+  return useMemo(() => {
+    const query = norm(q);
+    if (!query) return locations;
+    const tokens = query.split(" ");
+    return locations.filter((l) => {
+      const hay = norm(`${l.name} ${l.category ?? ""}`);
+      return tokens.every((t) => hay.includes(t));
+    });
+  }, [locations, q]);
+}
+
+function SearchField({
+  value,
+  onChange,
+  placeholder,
+  id,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  placeholder: string;
+  id: string;
+}) {
+  return (
+    <div className="relative">
+      <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
+      <input
+        id={id}
+        type="search"
+        inputMode="search"
+        autoComplete="off"
+        enterKeyHint="search"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        className="min-h-11 w-full rounded-xl border border-border bg-background pl-9 pr-9 text-sm outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+      />
+      {value && (
+        <button
+          type="button"
+          onClick={() => onChange("")}
+          aria-label="Hapus pencarian"
+          className="absolute right-2 top-1/2 grid size-7 -translate-y-1/2 place-items-center rounded-full text-muted-foreground hover:bg-muted"
+        >
+          <X className="size-4" />
+        </button>
+      )}
+    </div>
+  );
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
-// LocationCombobox — single-select dengan search
+// LocationCombobox — single select
 // ─────────────────────────────────────────────────────────────────────────────
 
 interface LocationComboboxProps {
   locations: LocationOption[];
-  value: string;           // location_id atau "" untuk kosong
+  value: string;
   onChange: (id: string) => void;
   placeholder?: string;
   emptyLabel?: string;
@@ -42,81 +96,62 @@ export function LocationCombobox({
   locations,
   value,
   onChange,
-  placeholder = "Cari atau pilih lokasi…",
+  placeholder = "Cari nama lokasi…",
   emptyLabel = "— Tidak ada —",
   required = false,
 }: LocationComboboxProps) {
-  const [open, setOpen] = useState(false);
-
-  const selected = useMemo(
-    () => locations.find((l) => l.id === value) ?? null,
-    [locations, value],
-  );
+  const [q, setQ] = useState("");
+  const inputId = useId();
+  const selected = useMemo(() => locations.find((l) => l.id === value) ?? null, [locations, value]);
+  const filtered = useFiltered(locations, q);
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <button
-          type="button"
-          role="combobox"
-          aria-expanded={open}
-          aria-label={placeholder}
-          className="mt-1 flex w-full items-center justify-between gap-2 rounded-xl border border-border bg-background px-3 py-2 text-sm transition hover:bg-accent/5 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
-        >
-          <span className={cn("min-w-0 flex-1 truncate text-left", !selected && "text-muted-foreground")}>
-            {selected ? selected.name : (required ? placeholder : emptyLabel)}
-          </span>
-          <ChevronsUpDown className="size-4 shrink-0 text-muted-foreground" />
-        </button>
-      </PopoverTrigger>
+    <div className="space-y-2">
+      <SearchField id={inputId} value={q} onChange={setQ} placeholder={placeholder} />
 
-      <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0" align="start">
-        <Command>
-          <CommandInput placeholder="Ketik nama lokasi…" />
-          <CommandList>
-            <CommandEmpty>
-              <span className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
-                <Search className="size-4" /> Lokasi tidak ditemukan.
+      <p className="text-xs text-muted-foreground">
+        Terpilih: <span className="font-medium text-foreground">{selected ? selected.name : emptyLabel}</span>
+      </p>
+
+      <ul className="max-h-56 overflow-y-auto overscroll-contain rounded-xl border border-border bg-background">
+        {!required && (
+          <li>
+            <button
+              type="button"
+              onClick={() => onChange("")}
+              className="flex min-h-11 w-full items-center gap-2 px-3 text-left text-sm text-muted-foreground hover:bg-accent/10"
+            >
+              <Check className={cn("size-4 shrink-0", value === "" ? "opacity-100 text-primary" : "opacity-0")} />
+              {emptyLabel}
+            </button>
+          </li>
+        )}
+        {filtered.map((loc) => (
+          <li key={loc.id}>
+            <button
+              type="button"
+              onClick={() => onChange(loc.id)}
+              aria-pressed={value === loc.id}
+              className="flex min-h-11 w-full items-center gap-2 px-3 py-2 text-left text-sm hover:bg-accent/10"
+            >
+              <Check className={cn("size-4 shrink-0", value === loc.id ? "opacity-100 text-primary" : "opacity-0")} />
+              <span className="min-w-0 flex-1">
+                <span className="block truncate font-medium">{loc.name}</span>
+                {loc.category && <span className="block truncate text-xs text-muted-foreground">{loc.category}</span>}
               </span>
-            </CommandEmpty>
-            <CommandGroup>
-              {/* Opsi kosong jika tidak wajib */}
-              {!required && (
-                <CommandItem
-                  key="__empty__"
-                  value=""
-                  onSelect={() => { onChange(""); setOpen(false); }}
-                  className="text-muted-foreground"
-                >
-                  <Check className={cn("size-4", value === "" ? "opacity-100" : "opacity-0")} />
-                  — pilih —
-                </CommandItem>
-              )}
-              {locations.map((loc) => (
-                <CommandItem
-                  key={loc.id}
-                  value={`${loc.name} ${loc.category ?? ""}`}
-                  onSelect={() => { onChange(loc.id); setOpen(false); }}
-                >
-                  <Check className={cn("size-4 shrink-0", value === loc.id ? "opacity-100 text-primary" : "opacity-0")} />
-                  <span className="min-w-0 flex-1">
-                    <span className="block truncate font-medium">{loc.name}</span>
-                    {loc.category && (
-                      <span className="block truncate text-xs text-muted-foreground">{loc.category}</span>
-                    )}
-                  </span>
-                </CommandItem>
-              ))}
-            </CommandGroup>
-          </CommandList>
-        </Command>
-      </PopoverContent>
-    </Popover>
+            </button>
+          </li>
+        ))}
+        {filtered.length === 0 && (
+          <li className="px-3 py-4 text-center text-sm text-muted-foreground">Lokasi tidak ditemukan.</li>
+        )}
+      </ul>
+    </div>
   );
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// LocationMultiSelect — multi-select dengan search, selected tags, maks. N
+// LocationMultiSelect — multi select (maks. N)
 // ─────────────────────────────────────────────────────────────────────────────
 
 interface LocationMultiSelectProps {
@@ -132,35 +167,23 @@ export function LocationMultiSelect({
   selectedIds,
   onChange,
   max = 5,
-  addLabel = "Tambah lokasi tujuan",
 }: LocationMultiSelectProps) {
-  const [open, setOpen] = useState(false);
-
+  const [q, setQ] = useState("");
+  const inputId = useId();
   const selectedLocations = useMemo(
     () => locations.filter((l) => selectedIds.includes(l.id)),
     [locations, selectedIds],
   );
-
-  // Location yang belum terpilih ditampilkan sebagai opsi di selector
-  const unselected = useMemo(
-    () => locations.filter((l) => !selectedIds.includes(l.id)),
-    [locations, selectedIds],
-  );
+  const filtered = useFiltered(locations, q);
+  const full = selectedIds.length >= max;
 
   const toggle = (id: string) => {
-    if (selectedIds.includes(id)) {
-      onChange(selectedIds.filter((x) => x !== id));
-    } else {
-      if (selectedIds.length >= max) return; // silently reject, caller bisa toast
-      onChange([...selectedIds, id]);
-    }
+    if (selectedIds.includes(id)) onChange(selectedIds.filter((x) => x !== id));
+    else if (!full) onChange([...selectedIds, id]);
   };
-
-  const remove = (id: string) => onChange(selectedIds.filter((x) => x !== id));
 
   return (
     <div className="space-y-2">
-      {/* Selected tags */}
       {selectedLocations.length > 0 && (
         <div className="flex flex-wrap gap-1.5">
           {selectedLocations.map((loc) => (
@@ -171,9 +194,9 @@ export function LocationMultiSelect({
               {loc.name}
               <button
                 type="button"
-                onClick={() => remove(loc.id)}
+                onClick={() => toggle(loc.id)}
                 aria-label={`Hapus ${loc.name}`}
-                className="rounded-full p-0.5 hover:bg-primary/20"
+                className="grid size-5 place-items-center rounded-full hover:bg-primary/20"
               >
                 <X className="size-3" />
               </button>
@@ -182,62 +205,37 @@ export function LocationMultiSelect({
         </div>
       )}
 
-      {/* Tombol tambah — hanya tampil jika belum mencapai maks */}
-      {selectedIds.length < max && (
-        <Popover open={open} onOpenChange={setOpen}>
-          <PopoverTrigger asChild>
-            <button
-              type="button"
-              className="inline-flex items-center gap-1.5 rounded-full border border-dashed border-border bg-background px-3 py-1.5 text-xs font-medium text-muted-foreground transition hover:border-primary hover:text-primary"
-            >
-              <Plus className="size-3.5" />
-              {addLabel}
-            </button>
-          </PopoverTrigger>
+      <SearchField id={inputId} value={q} onChange={setQ} placeholder="Cari lokasi tujuan…" />
 
-          <PopoverContent className="w-72 p-0" align="start">
-            <Command>
-              <CommandInput placeholder="Cari lokasi…" />
-              <CommandList>
-                <CommandEmpty>
-                  <span className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
-                    <Search className="size-4" /> Lokasi tidak ditemukan.
-                  </span>
-                </CommandEmpty>
-                <CommandGroup heading={`${selectedIds.length}/${max} dipilih`}>
-                  {unselected.map((loc) => (
-                    <CommandItem
-                      key={loc.id}
-                      value={`${loc.name} ${loc.category ?? ""}`}
-                      onSelect={() => {
-                        toggle(loc.id);
-                        // Tutup popover setelah pilih jika sudah maks
-                        if (selectedIds.length + 1 >= max) setOpen(false);
-                      }}
-                    >
-                      <span className="min-w-0 flex-1">
-                        <span className="block truncate font-medium">{loc.name}</span>
-                        {loc.category && (
-                          <span className="block truncate text-xs text-muted-foreground">{loc.category}</span>
-                        )}
-                      </span>
-                    </CommandItem>
-                  ))}
-                  {unselected.length === 0 && selectedIds.length > 0 && (
-                    <p className="px-2 py-3 text-center text-xs text-muted-foreground">
-                      Semua lokasi sudah dipilih.
-                    </p>
-                  )}
-                </CommandGroup>
-              </CommandList>
-            </Command>
-          </PopoverContent>
-        </Popover>
-      )}
+      <ul className="max-h-56 overflow-y-auto overscroll-contain rounded-xl border border-border bg-background">
+        {filtered.map((loc) => {
+          const on = selectedIds.includes(loc.id);
+          return (
+            <li key={loc.id}>
+              <button
+                type="button"
+                onClick={() => toggle(loc.id)}
+                disabled={!on && full}
+                aria-pressed={on}
+                className="flex min-h-11 w-full items-center gap-2 px-3 py-2 text-left text-sm hover:bg-accent/10 disabled:opacity-40"
+              >
+                <Check className={cn("size-4 shrink-0", on ? "opacity-100 text-primary" : "opacity-0")} />
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate font-medium">{loc.name}</span>
+                  {loc.category && <span className="block truncate text-xs text-muted-foreground">{loc.category}</span>}
+                </span>
+              </button>
+            </li>
+          );
+        })}
+        {filtered.length === 0 && (
+          <li className="px-3 py-4 text-center text-sm text-muted-foreground">Lokasi tidak ditemukan.</li>
+        )}
+      </ul>
 
-      {selectedIds.length === 0 && (
-        <p className="text-xs text-muted-foreground">Belum ada lokasi tujuan dipilih.</p>
-      )}
+      <p className="text-xs text-muted-foreground">
+        {selectedIds.length}/{max} lokasi tujuan dipilih{full ? " — batas tercapai." : "."}
+      </p>
     </div>
   );
 }
