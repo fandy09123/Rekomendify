@@ -194,6 +194,8 @@ export function GalleryUploader({
   const [busy, setBusy] = useState(false);
   const [queue, setQueue] = useState<File[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
+  const cameraRef = useRef<HTMLInputElement>(null);
+
   const canAdd = list.length < max;
 
   // Setiap gambar galeri melewati pemotong 4:3 satu per satu.
