@@ -7,6 +7,8 @@ import { NearbySwitch } from "@/components/nearby-switch";
 import { seededShuffle, useSessionSeed } from "@/lib/ordering";
 import { distanceMeters, formatDistance, toLatLng, useUserLocation } from "@/lib/distance";
 import { ArrowLeft, LayoutGrid, Search, X } from "lucide-react";
+import { SearchFilters } from "@/components/search-filters";
+import { passesFilters, type HoursFilter, type PriceFilter } from "@/lib/location-search";
 
 
 export const Route = createFileRoute("/r/$slug_/kategori/$cat")({
@@ -54,13 +56,14 @@ function KategoriPage() {
   const { position, state, request, clear } = useUserLocation();
   const [nearby, setNearby] = useState(false);
   const [query, setQuery] = useState("");
+  const [price, setPrice] = useState<PriceFilter>("all");
+  const [hours, setHours] = useState<HoursFilter>("all");
 
   const list = useMemo(() => {
     if (!data || !category) return [];
-    const q = query.trim().toLowerCase();
     const all = data.locations.filter((l: any) =>
       l.category_id === category.id &&
-      (!q || l.name.toLowerCase().includes(q) || (l.description ?? "").toLowerCase().includes(q))
+      passesFilters(l, { query, price, hours, categories: data.categories as any }),
     );
     // Featured tetap di atas dan tidak diacak; sisanya diacak stabil per sesi.
     const feat = all.filter((l: any) => l.is_featured);
@@ -75,7 +78,7 @@ function KategoriPage() {
         return { ...l, _dist: p ? distanceMeters(position, p) : null };
       })
       .sort((a: any, b: any) => (a._dist ?? Infinity) - (b._dist ?? Infinity));
-  }, [data, category, query, seed, cat, nearby, position]);
+  }, [data, category, query, price, hours, seed, cat, nearby, position]);
 
 
   if (!data) return null;
@@ -111,6 +114,10 @@ function KategoriPage() {
               onChange={(e) => setQuery(e.target.value)}
               placeholder={`Cari di ${category?.name ?? "kategori ini"}…`}
               aria-label={`Cari tempat di kategori ${category?.name ?? "ini"}`}
+              type="search"
+              inputMode="search"
+              enterKeyHint="search"
+              autoComplete="off"
               className="w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
             />
             {query && (
@@ -147,6 +154,10 @@ function KategoriPage() {
             ))}
           </div>
         )}
+
+        <div className="mt-4">
+          <SearchFilters price={price} hours={hours} onPrice={setPrice} onHours={setHours} />
+        </div>
 
         <div className="mt-4">
           <NearbySwitch

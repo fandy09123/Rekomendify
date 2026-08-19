@@ -1,11 +1,12 @@
 import { useCallback, useRef, useState } from "react";
 import { toast } from "sonner";
-import { Upload, X, Loader2, ImagePlus, ArrowLeft, ArrowRight, Sparkles } from "lucide-react";
+import { Upload, X, Loader2, ImagePlus, ArrowLeft, ArrowRight, Sparkles, Camera } from "lucide-react";
 import { stageImage, discardStaged, isStagedUrl, type StagedMeta } from "@/lib/upload-client";
 import { formatBytes } from "@/lib/image-compress";
 import { ImageCropper } from "@/components/image-cropper";
 
 const ACCEPT = "image/png,image/jpeg,image/jpg,image/webp,image/gif";
+
 
 function savingsLabel(meta: StagedMeta | null): string | null {
   if (!meta || meta.bytes >= meta.originalBytes) return null;
@@ -35,6 +36,10 @@ export function ImageUploader({
   const [meta, setMeta] = useState<StagedMeta | null>(null);
   const [pending, setPending] = useState<File | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  // Input terpisah dengan `capture` agar Chrome Android langsung membuka kamera
+  // belakang. Izin kamera baru diminta saat tombol ini benar-benar ditekan.
+  const cameraRef = useRef<HTMLInputElement>(null);
+
 
   // Admin memilih rasio saat memotong; banner tertentu dikunci oleh pemanggil.
   const handleFiles = useCallback((files: FileList | null) => {
@@ -94,31 +99,54 @@ export function ImageUploader({
                 {savings && <p className="mt-1 text-[11px] text-muted-foreground">{savings}</p>}
               </div>
               <div className="flex flex-wrap gap-2">
+                <button type="button" onClick={() => cameraRef.current?.click()} disabled={busy}
+                  aria-label="Ambil foto ulang dengan kamera"
+                  className="inline-flex min-h-9 items-center gap-1.5 rounded-full border border-border bg-card px-3 text-xs font-semibold hover:bg-accent/10 disabled:opacity-60">
+                  <Camera className="size-3.5" /> Ambil ulang
+                </button>
                 <button type="button" onClick={() => inputRef.current?.click()} disabled={busy}
-                  className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1.5 text-xs font-semibold hover:bg-accent/10 disabled:opacity-60">
-                  {busy ? <Loader2 className="size-3.5 animate-spin" /> : <Upload className="size-3.5" />} Ganti
+                  aria-label="Pilih gambar lain dari galeri"
+                  className="inline-flex min-h-9 items-center gap-1.5 rounded-full border border-border bg-card px-3 text-xs font-semibold hover:bg-accent/10 disabled:opacity-60">
+                  {busy ? <Loader2 className="size-3.5 animate-spin" /> : <Upload className="size-3.5" />} Galeri
                 </button>
                 <button type="button" onClick={clear} disabled={busy}
-                  className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1.5 text-xs font-semibold text-destructive hover:bg-destructive/10 disabled:opacity-60">
+                  aria-label="Hapus gambar"
+                  className="inline-flex min-h-9 items-center gap-1.5 rounded-full border border-border bg-card px-3 text-xs font-semibold text-destructive hover:bg-destructive/10 disabled:opacity-60">
                   <X className="size-3.5" /> Hapus
                 </button>
               </div>
             </div>
           </div>
         ) : (
-          <button
-            type="button"
-            onClick={() => inputRef.current?.click()}
-            disabled={busy}
-            className="flex w-full flex-col items-center justify-center gap-2 rounded-xl px-4 py-8 text-center"
-          >
+          <div className="flex flex-col items-center gap-3 rounded-xl px-4 py-7 text-center">
             {busy ? <Loader2 className="size-6 animate-spin text-primary" /> : <ImagePlus className="size-6 text-muted-foreground" />}
-            {/* Compression happens in the browser, so large phone photos are fine. */}
-            <p className="text-sm font-medium">{busy ? "Mengompres…" : "Pilih atau seret gambar ke sini"}</p>
+            {/* Kompresi terjadi di browser, jadi foto besar dari HP tetap aman. */}
+            <p className="text-sm font-medium">{busy ? "Mengompres…" : "Tambahkan gambar"}</p>
+            <div className="flex w-full max-w-xs flex-col gap-2 sm:flex-row">
+              <button
+                type="button"
+                onClick={() => cameraRef.current?.click()}
+                disabled={busy}
+                aria-label="Ambil foto dengan kamera"
+                className="inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-full bg-primary px-4 text-sm font-semibold text-primary-foreground disabled:opacity-60"
+              >
+                <Camera className="size-4" aria-hidden="true" /> Ambil Foto
+              </button>
+              <button
+                type="button"
+                onClick={() => inputRef.current?.click()}
+                disabled={busy}
+                aria-label="Pilih gambar dari galeri"
+                className="inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-full border border-border bg-card px-4 text-sm font-semibold hover:bg-accent/10 disabled:opacity-60"
+              >
+                <Upload className="size-4" aria-hidden="true" /> Pilih dari Galeri
+              </button>
+            </div>
             <p className="text-xs text-muted-foreground">
               {hint ?? (lockAspect ? "JPG, PNG, WebP · rasio 16:9 · dikompres otomatis" : "JPG, PNG, WebP · pilih rasio saat memotong")}
             </p>
-          </button>
+            <p className="text-[11px] text-muted-foreground">Bisa juga seret gambar ke area ini.</p>
+          </div>
         )}
         <input
           ref={inputRef}
@@ -127,6 +155,15 @@ export function ImageUploader({
           className="hidden"
           onChange={(e) => { handleFiles(e.target.files); if (inputRef.current) inputRef.current.value = ""; }}
         />
+        <input
+          ref={cameraRef}
+          type="file"
+          accept="image/*"
+          capture="environment"
+          className="hidden"
+          onChange={(e) => { handleFiles(e.target.files); if (cameraRef.current) cameraRef.current.value = ""; }}
+        />
+
       </div>
       {pending && (
         <ImageCropper
@@ -157,6 +194,8 @@ export function GalleryUploader({
   const [busy, setBusy] = useState(false);
   const [queue, setQueue] = useState<File[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
+  const cameraRef = useRef<HTMLInputElement>(null);
+
   const canAdd = list.length < max;
 
   // Setiap gambar galeri melewati pemotong 4:3 satu per satu.
@@ -254,15 +293,27 @@ export function GalleryUploader({
             ))}
           </ul>
         )}
-        <button
-          type="button"
-          onClick={() => inputRef.current?.click()}
-          disabled={busy || !canAdd}
-          className="flex w-full items-center justify-center gap-2 rounded-xl border border-border bg-card px-4 py-3 text-sm font-semibold hover:bg-accent/10 disabled:opacity-50"
-        >
-          {busy ? <Loader2 className="size-4 animate-spin" /> : <Upload className="size-4" />}
-          {busy ? "Mengompres…" : canAdd ? `Tambah gambar (${list.length}/${max})` : `Batas ${max} gambar tercapai`}
-        </button>
+        <div className="flex flex-col gap-2 sm:flex-row">
+          <button
+            type="button"
+            onClick={() => cameraRef.current?.click()}
+            disabled={busy || !canAdd}
+            aria-label="Ambil foto galeri dengan kamera"
+            className="flex min-h-11 flex-1 items-center justify-center gap-2 rounded-xl border border-border bg-card px-4 text-sm font-semibold hover:bg-accent/10 disabled:opacity-50"
+          >
+            <Camera className="size-4" aria-hidden="true" /> Ambil Foto
+          </button>
+          <button
+            type="button"
+            onClick={() => inputRef.current?.click()}
+            disabled={busy || !canAdd}
+            aria-label="Pilih gambar galeri dari galeri perangkat"
+            className="flex min-h-11 flex-1 items-center justify-center gap-2 rounded-xl border border-border bg-card px-4 text-sm font-semibold hover:bg-accent/10 disabled:opacity-50"
+          >
+            {busy ? <Loader2 className="size-4 animate-spin" /> : <Upload className="size-4" aria-hidden="true" />}
+            {busy ? "Mengompres…" : canAdd ? `Galeri (${list.length}/${max})` : `Batas ${max} gambar`}
+          </button>
+        </div>
         <input
           ref={inputRef}
           type="file"
@@ -271,6 +322,15 @@ export function GalleryUploader({
           className="hidden"
           onChange={(e) => { addFiles(e.target.files); if (inputRef.current) inputRef.current.value = ""; }}
         />
+        <input
+          ref={cameraRef}
+          type="file"
+          accept="image/*"
+          capture="environment"
+          className="hidden"
+          onChange={(e) => { addFiles(e.target.files); if (cameraRef.current) cameraRef.current.value = ""; }}
+        />
+
       </div>
       {queue[0] && (
         <ImageCropper
