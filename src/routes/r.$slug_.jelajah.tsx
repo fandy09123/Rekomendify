@@ -6,7 +6,9 @@ import { PageShell, LocationCard } from "@/components/rekomendify";
 import { NearbySwitch } from "@/components/nearby-switch";
 import { seededShuffle, useSessionSeed } from "@/lib/ordering";
 import { distanceMeters, formatDistance, toLatLng, useUserLocation } from "@/lib/distance";
-import { Search, ArrowLeft } from "lucide-react";
+import { Search, ArrowLeft, X } from "lucide-react";
+import { SearchFilters } from "@/components/search-filters";
+import { passesFilters, type HoursFilter, type PriceFilter } from "@/lib/location-search";
 
 
 export const Route = createFileRoute("/r/$slug_/jelajah")({
@@ -41,15 +43,16 @@ function JelajahWilayah() {
   const [activeCat, setActiveCat] = useState<string | null>(null);
   const [query, setQuery] = useState("");
   const [nearby, setNearby] = useState(false);
+  const [price, setPrice] = useState<PriceFilter>("all");
+  const [hours, setHours] = useState<HoursFilter>("all");
   const seed = useSessionSeed();
   const { position, state, request, clear } = useUserLocation();
 
   const filtered = useMemo(() => {
     if (!data) return [];
-    const q = query.trim().toLowerCase();
     const base = data.locations.filter((l: any) =>
       (!activeCat || l.category_id === activeCat) &&
-      (!q || l.name.toLowerCase().includes(q) || (l.description ?? "").toLowerCase().includes(q))
+      passesFilters(l, { query, price, hours, categories: data.categories as any }),
     );
     // Featured tetap di atas; sisanya diacak stabil per sesi.
     const ordered = [
@@ -63,7 +66,7 @@ function JelajahWilayah() {
         return { ...l, _dist: p ? distanceMeters(position, p) : null };
       })
       .sort((a: any, b: any) => (a._dist ?? Infinity) - (b._dist ?? Infinity));
-  }, [data, activeCat, query, seed, nearby, position]);
+  }, [data, activeCat, query, price, hours, seed, nearby, position]);
 
   if (!data) return null;
   const { region, categories } = data;
@@ -84,10 +87,20 @@ function JelajahWilayah() {
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Cari tempat, warung, wisata…"
+              placeholder="Cari tempat, kopi, nasi pecel…"
               aria-label="Cari tempat"
+              type="search"
+              inputMode="search"
+              enterKeyHint="search"
+              autoComplete="off"
               className="w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
             />
+            {query && (
+              <button type="button" onClick={() => setQuery("")} aria-label="Hapus pencarian"
+                className="shrink-0 rounded-full p-0.5 text-muted-foreground hover:text-foreground">
+                <X className="size-4" />
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -103,6 +116,10 @@ function JelajahWilayah() {
             ))}
           </div>
         )}
+
+        <div className="mt-4">
+          <SearchFilters price={price} hours={hours} onPrice={setPrice} onHours={setHours} />
+        </div>
 
         <div className="mt-4">
           <NearbySwitch
