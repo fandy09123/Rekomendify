@@ -291,15 +291,27 @@ export function GalleryUploader({
             ))}
           </ul>
         )}
-        <button
-          type="button"
-          onClick={() => inputRef.current?.click()}
-          disabled={busy || !canAdd}
-          className="flex w-full items-center justify-center gap-2 rounded-xl border border-border bg-card px-4 py-3 text-sm font-semibold hover:bg-accent/10 disabled:opacity-50"
-        >
-          {busy ? <Loader2 className="size-4 animate-spin" /> : <Upload className="size-4" />}
-          {busy ? "Mengompres…" : canAdd ? `Tambah gambar (${list.length}/${max})` : `Batas ${max} gambar tercapai`}
-        </button>
+        <div className="flex flex-col gap-2 sm:flex-row">
+          <button
+            type="button"
+            onClick={() => cameraRef.current?.click()}
+            disabled={busy || !canAdd}
+            aria-label="Ambil foto galeri dengan kamera"
+            className="flex min-h-11 flex-1 items-center justify-center gap-2 rounded-xl border border-border bg-card px-4 text-sm font-semibold hover:bg-accent/10 disabled:opacity-50"
+          >
+            <Camera className="size-4" aria-hidden="true" /> Ambil Foto
+          </button>
+          <button
+            type="button"
+            onClick={() => inputRef.current?.click()}
+            disabled={busy || !canAdd}
+            aria-label="Pilih gambar galeri dari galeri perangkat"
+            className="flex min-h-11 flex-1 items-center justify-center gap-2 rounded-xl border border-border bg-card px-4 text-sm font-semibold hover:bg-accent/10 disabled:opacity-50"
+          >
+            {busy ? <Loader2 className="size-4 animate-spin" /> : <Upload className="size-4" aria-hidden="true" />}
+            {busy ? "Mengompres…" : canAdd ? `Galeri (${list.length}/${max})` : `Batas ${max} gambar`}
+          </button>
+        </div>
         <input
           ref={inputRef}
           type="file"
@@ -308,6 +320,15 @@ export function GalleryUploader({
           className="hidden"
           onChange={(e) => { addFiles(e.target.files); if (inputRef.current) inputRef.current.value = ""; }}
         />
+        <input
+          ref={cameraRef}
+          type="file"
+          accept="image/*"
+          capture="environment"
+          className="hidden"
+          onChange={(e) => { addFiles(e.target.files); if (cameraRef.current) cameraRef.current.value = ""; }}
+        />
+
       </div>
       {queue[0] && (
         <ImageCropper
