@@ -36,6 +36,10 @@ export function ImageUploader({
   const [meta, setMeta] = useState<StagedMeta | null>(null);
   const [pending, setPending] = useState<File | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  // Input terpisah dengan `capture` agar Chrome Android langsung membuka kamera
+  // belakang. Izin kamera baru diminta saat tombol ini benar-benar ditekan.
+  const cameraRef = useRef<HTMLInputElement>(null);
+
 
   // Admin memilih rasio saat memotong; banner tertentu dikunci oleh pemanggil.
   const handleFiles = useCallback((files: FileList | null) => {
