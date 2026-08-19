@@ -1,11 +1,12 @@
 import { useCallback, useRef, useState } from "react";
 import { toast } from "sonner";
-import { Upload, X, Loader2, ImagePlus, ArrowLeft, ArrowRight, Sparkles } from "lucide-react";
+import { Upload, X, Loader2, ImagePlus, ArrowLeft, ArrowRight, Sparkles, Camera } from "lucide-react";
 import { stageImage, discardStaged, isStagedUrl, type StagedMeta } from "@/lib/upload-client";
 import { formatBytes } from "@/lib/image-compress";
 import { ImageCropper } from "@/components/image-cropper";
 
 const ACCEPT = "image/png,image/jpeg,image/jpg,image/webp,image/gif";
+
 
 function savingsLabel(meta: StagedMeta | null): string | null {
   if (!meta || meta.bytes >= meta.originalBytes) return null;
