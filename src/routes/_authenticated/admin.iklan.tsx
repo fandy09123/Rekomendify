@@ -8,6 +8,8 @@ import { toast } from "sonner";
 import { ImageUploader } from "@/components/image-uploader";
 import { commitUrl, removeImagesByUrl } from "@/lib/upload-client";
 import { LocationCombobox, LocationMultiSelect, type LocationOption } from "@/components/location-selector";
+import { AdminModal } from "@/components/admin-modal";
+
 
 export const Route = createFileRoute("/_authenticated/admin/iklan")({
   component: AdminAdsPage,
