@@ -207,9 +207,20 @@ function AdDialog({ initial, region, onClose, onSaved }: { initial: any; region:
   };
 
   return (
-    <div className="fixed inset-0 z-50 grid place-items-center overflow-y-auto bg-black/40 p-4" onClick={onClose}>
-      <form onClick={(e) => e.stopPropagation()} onSubmit={save} className="my-8 w-full max-w-lg space-y-4 rounded-3xl bg-card p-6">
-        <h3 className="font-display text-2xl">{f.id ? "Ubah iklan" : "Iklan baru"}</h3>
+    <AdminModal
+      title={f.id ? "Ubah iklan" : "Iklan baru"}
+      size="lg"
+      onClose={onClose}
+      onSubmit={save}
+      footer={
+        <div className="flex gap-2">
+          <button type="button" onClick={onClose} className="flex-1 rounded-full border border-border px-4 py-2.5 text-sm font-semibold">Batal</button>
+          <button disabled={saving} className="flex-1 rounded-full bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground disabled:opacity-50">{saving ? "Menyimpan…" : "Simpan"}</button>
+        </div>
+      }
+    >
+      <div className="space-y-4">
+
 
         <label className="block text-sm">Penempatan
           <select value={f.placement} onChange={(e) => setF({ ...f, placement: e.target.value })} className="mt-1 w-full rounded-xl border border-border bg-background px-3 py-2">
