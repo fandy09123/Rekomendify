@@ -293,13 +293,9 @@ function AdDialog({ initial, region, onClose, onSaved }: { initial: any; region:
             />
           </div>
         )}
+      </div>
+    </AdminModal>
 
-        <div className="flex gap-2 pt-2">
-          <button type="button" onClick={onClose} className="flex-1 rounded-full border border-border px-4 py-2.5 text-sm font-semibold">Batal</button>
-          <button disabled={saving} className="flex-1 rounded-full bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground disabled:opacity-50">{saving ? "Menyimpan…" : "Simpan"}</button>
-        </div>
-      </form>
-    </div>
   );
 }
 
