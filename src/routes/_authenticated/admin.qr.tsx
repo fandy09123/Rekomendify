@@ -471,20 +471,23 @@ function GenerateDialog({ onClose, onDone }: { onClose: () => void; onDone: () =
     finally { setSaving(false); }
   };
   return (
-    <div className="fixed inset-0 z-50 grid place-items-center bg-black/40 p-4" onClick={onClose}>
-      <form onSubmit={submit} onClick={(e) => e.stopPropagation()} className="w-full max-w-md rounded-3xl bg-card p-6">
-        <h2 className="font-display text-2xl">Generate QR batch</h2>
-        <p className="mt-1 text-sm text-muted-foreground">QR dibuat dalam status draft, aktif otomatis setelah di-assign.</p>
-        <div className="mt-4 space-y-3">
-          <label className="block"><span className="text-xs font-semibold uppercase text-muted-foreground">Jumlah</span><input type="number" min={1} max={200} value={count} onChange={(e) => setCount(Number(e.target.value))} className="input mt-1" /></label>
-          <label className="block"><span className="text-xs font-semibold uppercase text-muted-foreground">Label batch</span><input required value={label} onChange={(e) => setLabel(e.target.value)} className="input mt-1" placeholder="Batch Jan-2026" /></label>
-        </div>
-        <div className="mt-5 flex gap-2">
+    <AdminModal
+      title="Generate QR batch"
+      subtitle="QR dibuat dalam status draft, aktif otomatis setelah di-assign."
+      onClose={onClose}
+      onSubmit={submit}
+      footer={
+        <div className="flex gap-2">
           <button type="button" onClick={onClose} className="flex-1 rounded-full border border-border px-4 py-2.5 text-sm font-semibold">Batal</button>
           <button disabled={saving} className="flex-1 rounded-full bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground disabled:opacity-60">{saving ? "Membuat…" : "Generate"}</button>
         </div>
-      </form>
-    </div>
+      }
+    >
+      <div className="space-y-3">
+        <label className="block"><span className="text-xs font-semibold uppercase text-muted-foreground">Jumlah</span><input type="number" min={1} max={200} value={count} onChange={(e) => setCount(Number(e.target.value))} className="input mt-1" /></label>
+        <label className="block"><span className="text-xs font-semibold uppercase text-muted-foreground">Label batch</span><input required value={label} onChange={(e) => setLabel(e.target.value)} className="input mt-1" placeholder="Batch Jan-2026" /></label>
+      </div>
+    </AdminModal>
   );
 }
 
@@ -492,36 +495,55 @@ function AssignDialog({ qr, onClose, onDone }: { qr: any; onClose: () => void; o
   const { data: my } = useQuery({ queryKey: ["my-region"], queryFn: () => myRegion() });
   const [locationId, setLocationId] = useState<string>("");
   const [note, setNote] = useState("");
-  const locations = my?.locations ?? [];
+  const [saving, setSaving] = useState(false);
+  const locations: any[] = my?.locations ?? [];
+
+  // Sama persis dengan panel Promosi: pencarian lokasi di sisi klien.
+  const locationOptions: LocationOption[] = useMemo(
+    () => locations.map((l) => ({ id: l.id, name: l.name, category: l.categories?.name ?? null })),
+    [locations],
+  );
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!locationId) { toast.error("Pilih lokasi terlebih dahulu."); return; }
+    setSaving(true);
     try { await assignQr({ data: { qr_id: qr.id, location_id: locationId, placement_note: note || null } }); toast.success("QR ter-assign"); onDone(); }
     catch (err: any) { toast.error(err.message); }
+    finally { setSaving(false); }
   };
   return (
-    <div className="fixed inset-0 z-50 grid place-items-center bg-black/40 p-4" onClick={onClose}>
-      <form onSubmit={submit} onClick={(e) => e.stopPropagation()} className="w-full max-w-md rounded-3xl bg-card p-6">
-        <h2 className="font-display text-2xl">Assign QR ke lokasi</h2>
-        <p className="mt-1 font-mono text-xs text-muted-foreground">{qr.code}</p>
-        <p className="mt-1 text-xs text-muted-foreground">Wilayah: {my?.region?.name ?? "—"}</p>
-        <div className="mt-4 space-y-3">
-          <label className="block"><span className="text-xs font-semibold uppercase text-muted-foreground">Lokasi</span>
-            <select required value={locationId} onChange={(e) => setLocationId(e.target.value)} className="input mt-1">
-              <option value="">— pilih lokasi —</option>
-              {locations.map((l: any) => <option key={l.id} value={l.id}>{l.name}</option>)}
-            </select>
-          </label>
-          <label className="block"><span className="text-xs font-semibold uppercase text-muted-foreground">Catatan penempatan (opsional)</span><input value={note} onChange={(e) => setNote(e.target.value)} className="input mt-1" placeholder="Di kasir, dekat pintu masuk…" /></label>
-        </div>
-        <div className="mt-5 flex gap-2">
+    <AdminModal
+      title="Assign QR ke lokasi"
+      subtitle={<span className="font-mono">{qr.code} · {my?.region?.name ?? "—"}</span>}
+      onClose={onClose}
+      onSubmit={submit}
+      footer={
+        <div className="flex gap-2">
           <button type="button" onClick={onClose} className="flex-1 rounded-full border border-border px-4 py-2.5 text-sm font-semibold">Batal</button>
-          <button className="flex-1 rounded-full bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground">Assign</button>
+          <button disabled={saving || !locationId} className="flex-1 rounded-full bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground disabled:opacity-60">{saving ? "Menyimpan…" : "Assign"}</button>
         </div>
-      </form>
-    </div>
+      }
+    >
+      <div className="space-y-3">
+        <div>
+          <span className="text-xs font-semibold uppercase text-muted-foreground">Lokasi</span>
+          <div className="mt-1">
+            <LocationCombobox
+              locations={locationOptions}
+              value={locationId}
+              onChange={setLocationId}
+              required
+              placeholder="Cari nama lokasi…"
+            />
+          </div>
+        </div>
+        <label className="block"><span className="text-xs font-semibold uppercase text-muted-foreground">Catatan penempatan (opsional)</span><input value={note} onChange={(e) => setNote(e.target.value)} className="input mt-1" placeholder="Di kasir, dekat pintu masuk…" /></label>
+      </div>
+    </AdminModal>
   );
 }
+
 
 function extractQrCode(text: string): string {
   const trimmed = text.trim();
