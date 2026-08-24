@@ -5,6 +5,9 @@ import QRCode from "qrcode";
 import { listQr, generateQrBatch, assignQr, releaseQr, myRegion, markQrPrinted, retireQr, deleteQr } from "@/lib/admin.functions";
 import { toast } from "sonner";
 import { Plus, Link2, Unlink, Download, QrCode, X, AlertTriangle, RotateCcw, Printer, MapPin, Trash2, CheckCircle2, Search } from "lucide-react";
+import { AdminModal } from "@/components/admin-modal";
+import { LocationCombobox, type LocationOption } from "@/components/location-selector";
+
 
 export const Route = createFileRoute("/_authenticated/admin/qr")({
   component: QrPage,
