@@ -311,31 +311,12 @@ function ActivateDialog({ ad, prices, balance, onClose, onDone }: { ad: any; pri
   const cost = options.find((o) => o.duration_days === days)?.credits ?? 0;
 
   return (
-    <div className="fixed inset-0 z-50 grid place-items-center bg-black/40 p-4" onClick={onClose}>
-      <div onClick={(e) => e.stopPropagation()} className="w-full max-w-md rounded-3xl bg-card p-6">
-        <h3 className="font-display text-2xl">Aktifkan iklan</h3>
-        <p className="mt-1 text-sm text-muted-foreground">{ad.title} — {PLACEMENT_LABEL[ad.placement]}</p>
-
-        <div className="mt-4 space-y-2">
-          {options.map((o) => (
-            <button
-              key={o.duration_days}
-              onClick={() => setDays(o.duration_days)}
-              className={`flex w-full items-center justify-between rounded-2xl border px-4 py-3 text-sm ${days === o.duration_days ? "border-primary bg-primary/5" : "border-border"}`}
-            >
-              <span className="font-semibold">{o.duration_days} hari</span>
-              <span className="text-muted-foreground">{o.credits} kredit</span>
-            </button>
-          ))}
-          {options.length === 0 && <p className="text-sm text-muted-foreground">Paket harga belum tersedia.</p>}
-        </div>
-
-        <p className="mt-4 text-sm">
-          Saldo: <span className="font-semibold">{balance}</span> kredit → sisa setelah aktivasi:{" "}
-          <span className={`font-semibold ${balance - cost < 0 ? "text-destructive" : ""}`}>{balance - cost}</span>
-        </p>
-
-        <div className="mt-4 flex gap-2">
+    <AdminModal
+      title="Aktifkan iklan"
+      subtitle={`${ad.title} — ${PLACEMENT_LABEL[ad.placement]}`}
+      onClose={onClose}
+      footer={
+        <div className="flex gap-2">
           <button onClick={onClose} className="flex-1 rounded-full border border-border px-4 py-2.5 text-sm font-semibold">Batal</button>
           <button
             disabled={busy || options.length === 0 || balance < cost}
@@ -352,7 +333,27 @@ function ActivateDialog({ ad, prices, balance, onClose, onDone }: { ad: any; pri
             {busy ? "Memproses…" : "Aktifkan"}
           </button>
         </div>
+      }
+    >
+      <div className="space-y-2">
+        {options.map((o) => (
+          <button
+            key={o.duration_days}
+            onClick={() => setDays(o.duration_days)}
+            className={`flex min-h-12 w-full items-center justify-between rounded-2xl border px-4 py-3 text-sm ${days === o.duration_days ? "border-primary bg-primary/5" : "border-border"}`}
+          >
+            <span className="font-semibold">{o.duration_days} hari</span>
+            <span className="text-muted-foreground">{o.credits} kredit</span>
+          </button>
+        ))}
+        {options.length === 0 && <p className="text-sm text-muted-foreground">Paket harga belum tersedia.</p>}
       </div>
-    </div>
+
+      <p className="mt-4 text-sm">
+        Saldo: <span className="font-semibold">{balance}</span> kredit → sisa setelah aktivasi:{" "}
+        <span className={`font-semibold ${balance - cost < 0 ? "text-destructive" : ""}`}>{balance - cost}</span>
+      </p>
+    </AdminModal>
   );
+
 }
