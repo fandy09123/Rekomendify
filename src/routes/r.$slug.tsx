@@ -11,6 +11,10 @@ import { setLastRegion, clearLastRegion } from "@/lib/last-region";
 import { seededShuffle, useSessionSeed } from "@/lib/ordering";
 import { ShareButton } from "@/components/share-button";
 import { PushFollowButton } from "@/components/push-follow-button";
+import { useIncrementalList } from "@/hooks/use-incremental-list";
+import { InfiniteListFooter } from "@/components/infinite-list-footer";
+import { javaneseDayInfo } from "@/lib/javanese-calendar";
+import { CalendarDays } from "lucide-react";
 
 const searchSchema = z.object({
   src: z.enum(["qr", "gps", "direct"]).optional(),
