@@ -146,7 +146,7 @@ function JelajahWilayah() {
               Tidak ada tempat yang cocok.
             </div>
           )}
-          {filtered.map((l: any) => (
+          {page.visible.map((l: any) => (
             <LocationCard
               key={l.id}
               regionSlug={region.slug}
@@ -162,6 +162,14 @@ function JelajahWilayah() {
           ))}
 
         </div>
+        <InfiniteListFooter
+          hasMore={page.hasMore}
+          total={page.total}
+          sentinelRef={page.sentinelRef}
+          onLoadMore={page.loadMore}
+          emptyDoneLabel="Semua tempat sudah ditampilkan."
+        />
+
       </div>
     </PageShell>
   );
