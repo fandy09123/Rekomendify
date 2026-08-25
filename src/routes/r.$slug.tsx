@@ -266,7 +266,7 @@ function RegionPage() {
                 Belum ada tempat yang cocok.
               </div>
             ) : (
-              rest.map((l: any) => (
+              restPage.visible.map((l: any) => (
                 <LocationCard
                   key={l.id}
                   regionSlug={region.slug}
@@ -281,6 +281,14 @@ function RegionPage() {
               ))
             )}
           </div>
+          <InfiniteListFooter
+            hasMore={restPage.hasMore}
+            total={restPage.total}
+            sentinelRef={restPage.sentinelRef}
+            onLoadMore={restPage.loadMore}
+            emptyDoneLabel="Semua tempat sudah ditampilkan."
+          />
+
         </div>
       </PageShell>
     </>
