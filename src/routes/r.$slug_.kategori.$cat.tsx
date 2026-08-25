@@ -9,6 +9,8 @@ import { distanceMeters, formatDistance, toLatLng, useUserLocation } from "@/lib
 import { ArrowLeft, LayoutGrid, Search, X } from "lucide-react";
 import { SearchFilters } from "@/components/search-filters";
 import { passesFilters, type HoursFilter, type PriceFilter } from "@/lib/location-search";
+import { useIncrementalList } from "@/hooks/use-incremental-list";
+import { InfiniteListFooter } from "@/components/infinite-list-footer";
 
 
 export const Route = createFileRoute("/r/$slug_/kategori/$cat")({
@@ -80,6 +82,11 @@ function KategoriPage() {
       .sort((a: any, b: any) => (a._dist ?? Infinity) - (b._dist ?? Infinity));
   }, [data, category, query, price, hours, seed, cat, nearby, position]);
 
+  const page = useIncrementalList(
+    list,
+    `cat:${slug}:${cat}:${query}:${price}:${hours}:${nearby ? "near" : "std"}`,
+    10,
+  );
 
   if (!data) return null;
   const { region, categories } = data;
@@ -176,7 +183,7 @@ function KategoriPage() {
                 : "Belum ada tempat pada kategori ini."}
             </div>
           ) : (
-            list.map((l: any) => (
+            page.visible.map((l: any) => (
               <LocationCard
                 key={l.id}
                 regionSlug={region.slug}
@@ -192,6 +199,15 @@ function KategoriPage() {
             ))
           )}
         </div>
+        <InfiniteListFooter
+          hasMore={page.hasMore}
+          total={page.total}
+          sentinelRef={page.sentinelRef}
+          onLoadMore={page.loadMore}
+          emptyDoneLabel="Semua tempat sudah ditampilkan."
+        />
+
+
 
       </div>
     </PageShell>

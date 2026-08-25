@@ -9,6 +9,8 @@ import { distanceMeters, formatDistance, toLatLng, useUserLocation } from "@/lib
 import { Search, ArrowLeft, X } from "lucide-react";
 import { SearchFilters } from "@/components/search-filters";
 import { passesFilters, type HoursFilter, type PriceFilter } from "@/lib/location-search";
+import { useIncrementalList } from "@/hooks/use-incremental-list";
+import { InfiniteListFooter } from "@/components/infinite-list-footer";
 
 
 export const Route = createFileRoute("/r/$slug_/jelajah")({
@@ -68,8 +70,15 @@ function JelajahWilayah() {
       .sort((a: any, b: any) => (a._dist ?? Infinity) - (b._dist ?? Infinity));
   }, [data, activeCat, query, price, hours, seed, nearby, position]);
 
+  const page = useIncrementalList(
+    filtered,
+    `jelajah:${slug}:${activeCat ?? "all"}:${query}:${price}:${hours}:${nearby ? "near" : "std"}`,
+    10,
+  );
+
   if (!data) return null;
   const { region, categories } = data;
+
 
 
   return (
@@ -137,7 +146,7 @@ function JelajahWilayah() {
               Tidak ada tempat yang cocok.
             </div>
           )}
-          {filtered.map((l: any) => (
+          {page.visible.map((l: any) => (
             <LocationCard
               key={l.id}
               regionSlug={region.slug}
@@ -153,6 +162,14 @@ function JelajahWilayah() {
           ))}
 
         </div>
+        <InfiniteListFooter
+          hasMore={page.hasMore}
+          total={page.total}
+          sentinelRef={page.sentinelRef}
+          onLoadMore={page.loadMore}
+          emptyDoneLabel="Semua tempat sudah ditampilkan."
+        />
+
       </div>
     </PageShell>
   );

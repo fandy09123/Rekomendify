@@ -1,6 +1,6 @@
 import { createFileRoute, notFound, Link, useLocation } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { z } from "zod";
 import { getRegionBySlug, recordVisit, listRegionAds } from "@/lib/public.functions";
 import { PromotedBadge } from "@/components/ads";
@@ -11,6 +11,10 @@ import { setLastRegion, clearLastRegion } from "@/lib/last-region";
 import { seededShuffle, useSessionSeed } from "@/lib/ordering";
 import { ShareButton } from "@/components/share-button";
 import { PushFollowButton } from "@/components/push-follow-button";
+import { useIncrementalList } from "@/hooks/use-incremental-list";
+import { InfiniteListFooter } from "@/components/infinite-list-footer";
+import { javaneseDayInfo } from "@/lib/javanese-calendar";
+import { CalendarDays } from "lucide-react";
 
 const searchSchema = z.object({
   src: z.enum(["qr", "gps", "direct"]).optional(),
@@ -75,6 +79,14 @@ function RegionPage() {
     const plain = (data?.locations ?? []).filter((l: any) => !l.is_featured && !promoted.has(l.id));
     return seededShuffle(plain, seed, `home:${slug}`);
   }, [data?.locations, ads?.featured, seed, slug]);
+
+  // Render bertahap: hanya sebagian daftar yang masuk DOM saat initial load.
+  const restPage = useIncrementalList(shuffledRest, `home:${slug}`, 10);
+
+  // Hari pasaran dihitung di client agar mengikuti tanggal lokal pengguna.
+  const [javaDay, setJavaDay] = useState<ReturnType<typeof javaneseDayInfo> | null>(null);
+  useEffect(() => setJavaDay(javaneseDayInfo()), []);
+
 
   useEffect(() => {
     if (!data?.region) return;
@@ -145,6 +157,18 @@ function RegionPage() {
                 {region.tagline}
               </p>
             )}
+
+            {javaDay && (
+              <p className="mt-2 inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-2.5 py-1 text-xs text-muted-foreground">
+                <CalendarDays className="size-3.5 shrink-0 text-primary" aria-hidden />
+                <span>
+                  Hari ini • <span className="font-semibold text-foreground">{javaDay.short}</span>
+                  <span className="hidden min-[380px]:inline">, {javaDay.dateLabel}</span>
+                </span>
+              </p>
+            )}
+
+
 
             {/* Maskot & promosi berbagi satu ruang visual dengan rasio tetap. */}
             <HomeHero
@@ -266,7 +290,7 @@ function RegionPage() {
                 Belum ada tempat yang cocok.
               </div>
             ) : (
-              rest.map((l: any) => (
+              restPage.visible.map((l: any) => (
                 <LocationCard
                   key={l.id}
                   regionSlug={region.slug}
@@ -281,6 +305,14 @@ function RegionPage() {
               ))
             )}
           </div>
+          <InfiniteListFooter
+            hasMore={restPage.hasMore}
+            total={restPage.total}
+            sentinelRef={restPage.sentinelRef}
+            onLoadMore={restPage.loadMore}
+            emptyDoneLabel="Semua tempat sudah ditampilkan."
+          />
+
         </div>
       </PageShell>
     </>
