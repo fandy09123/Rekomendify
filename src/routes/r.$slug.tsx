@@ -80,6 +80,14 @@ function RegionPage() {
     return seededShuffle(plain, seed, `home:${slug}`);
   }, [data?.locations, ads?.featured, seed, slug]);
 
+  // Render bertahap: hanya sebagian daftar yang masuk DOM saat initial load.
+  const restPage = useIncrementalList(shuffledRest, `home:${slug}`, 10);
+
+  // Hari pasaran dihitung di client agar mengikuti tanggal lokal pengguna.
+  const [javaDay, setJavaDay] = useState<ReturnType<typeof javaneseDayInfo> | null>(null);
+  useEffect(() => setJavaDay(javaneseDayInfo()), []);
+
+
   useEffect(() => {
     if (!data?.region) return;
     recordVisit({ data: { regionId: data.region.id, source: src ?? "direct" } }).catch(() => {});
