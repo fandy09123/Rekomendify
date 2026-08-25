@@ -35,27 +35,24 @@ export function seededShuffle<T>(items: readonly T[], seed: number, salt = ""): 
   return out;
 }
 
-const SEED_KEY = "rekomendify:order-seed";
-
 /**
- * Seed per sesi browser. Bernilai 0 pada server dan render pertama sehingga
- * hidrasi tetap cocok, lalu terisi setelah mount.
+ * Seed per pemuatan halaman (bukan per sesi): setiap refresh/reload menghasilkan
+ * urutan baru, tetapi tetap stabil selama halaman dibuka & saat navigasi antar
+ * rute (nilai disimpan di modul, bukan di state komponen).
+ * Bernilai 0 pada server dan render pertama agar hidrasi tetap cocok.
  */
+let PAGE_SEED = 0;
+
+function getPageSeed(): number {
+  if (!PAGE_SEED) PAGE_SEED = Math.floor(Math.random() * 2147483647) + 1;
+  return PAGE_SEED;
+}
+
 export function useSessionSeed(): number {
   const [seed, setSeed] = useState(0);
   useEffect(() => {
-    let s = 0;
-    try {
-      const stored = sessionStorage.getItem(SEED_KEY);
-      s = stored ? Number(stored) : 0;
-      if (!s || !Number.isFinite(s)) {
-        s = Math.floor(Math.random() * 2147483647) + 1;
-        sessionStorage.setItem(SEED_KEY, String(s));
-      }
-    } catch {
-      s = 1;
-    }
-    setSeed(s);
+    setSeed(getPageSeed());
   }, []);
   return seed;
 }
+
