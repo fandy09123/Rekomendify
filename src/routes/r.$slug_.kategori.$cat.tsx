@@ -183,7 +183,7 @@ function KategoriPage() {
                 : "Belum ada tempat pada kategori ini."}
             </div>
           ) : (
-            list.map((l: any) => (
+            page.visible.map((l: any) => (
               <LocationCard
                 key={l.id}
                 regionSlug={region.slug}
@@ -199,6 +199,15 @@ function KategoriPage() {
             ))
           )}
         </div>
+        <InfiniteListFooter
+          hasMore={page.hasMore}
+          total={page.total}
+          sentinelRef={page.sentinelRef}
+          onLoadMore={page.loadMore}
+          emptyDoneLabel="Semua tempat sudah ditampilkan."
+        />
+
+
 
       </div>
     </PageShell>
