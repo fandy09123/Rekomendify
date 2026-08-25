@@ -158,6 +158,18 @@ function RegionPage() {
               </p>
             )}
 
+            {javaDay && (
+              <p className="mt-2 inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-2.5 py-1 text-xs text-muted-foreground">
+                <CalendarDays className="size-3.5 shrink-0 text-primary" aria-hidden />
+                <span>
+                  Hari ini • <span className="font-semibold text-foreground">{javaDay.short}</span>
+                  <span className="hidden min-[380px]:inline">, {javaDay.dateLabel}</span>
+                </span>
+              </p>
+            )}
+
+
+
             {/* Maskot & promosi berbagi satu ruang visual dengan rasio tetap. */}
             <HomeHero
               regionSlug={region.slug}
