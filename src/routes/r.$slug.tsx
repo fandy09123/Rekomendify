@@ -1,6 +1,6 @@
 import { createFileRoute, notFound, Link, useLocation } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { z } from "zod";
 import { getRegionBySlug, recordVisit, listRegionAds } from "@/lib/public.functions";
 import { PromotedBadge } from "@/components/ads";
