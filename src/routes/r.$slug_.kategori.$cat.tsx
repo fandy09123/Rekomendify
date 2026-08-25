@@ -9,6 +9,8 @@ import { distanceMeters, formatDistance, toLatLng, useUserLocation } from "@/lib
 import { ArrowLeft, LayoutGrid, Search, X } from "lucide-react";
 import { SearchFilters } from "@/components/search-filters";
 import { passesFilters, type HoursFilter, type PriceFilter } from "@/lib/location-search";
+import { useIncrementalList } from "@/hooks/use-incremental-list";
+import { InfiniteListFooter } from "@/components/infinite-list-footer";
 
 
 export const Route = createFileRoute("/r/$slug_/kategori/$cat")({
