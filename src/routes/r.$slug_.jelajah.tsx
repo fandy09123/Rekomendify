@@ -70,8 +70,15 @@ function JelajahWilayah() {
       .sort((a: any, b: any) => (a._dist ?? Infinity) - (b._dist ?? Infinity));
   }, [data, activeCat, query, price, hours, seed, nearby, position]);
 
+  const page = useIncrementalList(
+    filtered,
+    `jelajah:${slug}:${activeCat ?? "all"}:${query}:${price}:${hours}:${nearby ? "near" : "std"}`,
+    10,
+  );
+
   if (!data) return null;
   const { region, categories } = data;
+
 
 
   return (
