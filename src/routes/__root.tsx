@@ -70,7 +70,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       // iOS PWA
       { name: "apple-mobile-web-app-capable", content: "yes" },
       { name: "apple-mobile-web-app-status-bar-style", content: "default" },
-      { name: "apple-mobile-web-app-title", content: "Cak Mulyo & Jeng Sari" },
+      { name: "apple-mobile-web-app-title", content: "Desa Mulyosari" },
       { name: "mobile-web-app-capable", content: "yes" },
     ],
     links: [
