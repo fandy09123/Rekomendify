@@ -12,6 +12,7 @@ import { useQuery } from "@tanstack/react-query";
 import { getRegionContact } from "@/lib/public.functions";
 import { waChatUrl } from "@/lib/geo";
 import { InstallAppCard } from "@/components/install-app";
+import { UpdateAppCard } from "@/components/update-app";
 
 export const Route = createFileRoute("/r/$slug_/settings")({
   head: () => ({
@@ -93,6 +94,7 @@ function RegionSettings() {
 
         <p className="mt-6 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Aplikasi</p>
         <InstallAppCard />
+        <UpdateAppCard />
 
         {adminWa && (
           <>

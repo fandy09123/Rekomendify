@@ -117,6 +117,19 @@ function RootComponent() {
 
     let reg: ServiceWorkerRegistration | null = null;
     let last = 0;
+    let refreshing = false;
+    const hadController = !!navigator.serviceWorker.controller;
+
+    // Muat ulang halaman saat Service Worker baru mengambil alih (controllerchange)
+    const onControllerChange = () => {
+      if (refreshing) return;
+      if (!hadController) return; // Abaikan pada klaim pertama visitor baru
+      refreshing = true;
+      window.location.reload();
+    };
+
+    navigator.serviceWorker.addEventListener("controllerchange", onControllerChange);
+
     const check = () => {
       if (!reg || document.visibilityState !== "visible") return;
       const now = Date.now();
@@ -134,7 +147,10 @@ function RootComponent() {
       .catch((err) => console.warn("[SW] Registrasi gagal:", err));
 
     document.addEventListener("visibilitychange", check);
-    return () => document.removeEventListener("visibilitychange", check);
+    return () => {
+      document.removeEventListener("visibilitychange", check);
+      navigator.serviceWorker.removeEventListener("controllerchange", onControllerChange);
+    };
   }, []);
 
   useEffect(() => {

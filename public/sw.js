@@ -59,6 +59,13 @@ self.addEventListener("install", (event) => {
   self.skipWaiting();
 });
 
+// Listener pesan untuk memicu skipWaiting bila diminta klien
+self.addEventListener("message", (event) => {
+  if (event.data && event.data.type === "SKIP_WAITING") {
+    self.skipWaiting();
+  }
+});
+
 // ── Activate ─────────────────────────────────────────────────────────────────
 self.addEventListener("activate", (event) => {
   event.waitUntil(

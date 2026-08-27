@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAdminSession } from "@/hooks/use-admin-session";
 import { waLink, WA_MESSAGES, APP_VERSION } from "@/lib/contact";
 import { InstallAppCard } from "@/components/install-app";
+import { UpdateAppCard } from "@/components/update-app";
 import {
   Info, HelpCircle, Lightbulb, Home as HomeIcon, Megaphone, Handshake,
   ChevronRight, ShieldCheck, LogOut,
@@ -55,6 +56,7 @@ function Settings() {
 
         <p className="mt-6 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Aplikasi</p>
         <InstallAppCard />
+        <UpdateAppCard />
 
 
         <p className="mt-6 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Informasi</p>
