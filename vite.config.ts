@@ -11,9 +11,5 @@ export default defineConfig({
     // Redirect TanStack Start's bundled server entry to src/server.ts (our SSR error wrapper).
     // nitro/vite builds from this
     server: { entry: "server" },
-    // Prerender the App Shell so the build also emits a static index.html.
-    // Capacitor bundles static assets into the APK (webDir in capacitor.config.ts).
-    prerender: { enabled: true, crawlLinks: false },
-    pages: [{ path: "/", prerender: { enabled: true } }],
   },
 });
