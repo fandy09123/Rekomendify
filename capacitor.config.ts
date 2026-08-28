@@ -8,12 +8,12 @@ import type { CapacitorConfig } from "@capacitor/cli";
  *   Anda SEBELUM menjalankan `npx cap add android`. Mengubah appId setelah
  *   aplikasi rilis di Play Store tidak dimungkinkan.
  * - `webDir` harus menunjuk ke folder hasil build web yang berisi index.html.
- *   Verifikasi dengan `ls dist/client` setelah `npm run build`.
+ *   Folder ini dihasilkan oleh `npm run build:capacitor`.
  */
 const config: CapacitorConfig = {
   appId: "com.rekomendify.desamulyosari",
   appName: "Desa Mulyosari",
-  webDir: "dist/client",
+  webDir: "dist/capacitor",
   android: {
     // Konten dilayani lewat https:// agar cookie/secure context website target
     // berperilaku sama seperti di browser.
