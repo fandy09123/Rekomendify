@@ -5,10 +5,10 @@
  * sedangkan Capacitor membutuhkan folder statis berisi index.html yang bisa
  * dibundel ke dalam APK. Script ini menghasilkan versi statis dari App Shell:
  *
- *   dist/capacitor/
- *     index.html      <- App Shell (loading / offline / redirect)
- *     assets/*.css    <- CSS Tailwind hasil build (kelas yang sama dgn versi React)
- *     favicon.ico
+ *    dist/capacitor/
+ *      index.html      <- App Shell (loading / offline / redirect)
+ *      assets/*.css    <- CSS Tailwind hasil build (kelas yang sama dgn versi React)
+ *      favicon.ico
  *
  * Nilai TARGET_URL & VILLAGE_NAME dibaca langsung dari src/config.ts sehingga
  * tetap ada satu sumber konfigurasi.
@@ -20,7 +20,12 @@ import { existsSync } from "node:fs";
 import path from "node:path";
 
 const root = process.cwd();
-const clientDir = path.join(root, "dist", "client");
+
+// Mengarahkan clientDir ke folder output Nitro (.output/public), atau dist/client sebagai fallback
+const nitroPublicDir = path.join(root, ".output", "public");
+const fallbackClientDir = path.join(root, "dist", "client");
+const clientDir = existsSync(nitroPublicDir) ? nitroPublicDir : fallbackClientDir;
+
 const outDir = path.join(root, "dist", "capacitor");
 
 function fail(message) {
@@ -40,11 +45,11 @@ const VILLAGE_NAME = read("VILLAGE_NAME");
 
 // --- 2. Ambil CSS Tailwind hasil build --------------------------------------
 if (!existsSync(clientDir)) {
-  fail("Folder dist/client tidak ditemukan. Jalankan `npm run build` terlebih dahulu.");
+  fail(`Folder aset tidak ditemukan di ${clientDir}. Jalankan \`npm run build\` terlebih dahulu.`);
 }
 const assets = await readdir(path.join(clientDir, "assets"));
 const cssFile = assets.find((f) => f.endsWith(".css"));
-if (!cssFile) fail("Tidak menemukan file CSS di dist/client/assets.");
+if (!cssFile) fail(`Tidak menemukan file CSS di ${clientDir}/assets.`);
 
 await mkdir(path.join(outDir, "assets"), { recursive: true });
 await copyFile(path.join(clientDir, "assets", cssFile), path.join(outDir, "assets", cssFile));
