@@ -30,6 +30,22 @@
     </application>
 
     <!-- Permissions -->
+    <!-- Prinsip least privilege: hanya permission yang dipakai fitur existing. -->
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
+    <!-- Scan QR (kamera dipakai oleh halaman web di dalam WebView) -->
+    <uses-permission android:name="android.permission.CAMERA" />
+
+    <!-- Fitur "Terdekat" (geolocation WebView) -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+
+    <!-- Notifikasi (runtime permission pada Android 13+) -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
+    <!-- Kamera & GPS bukan syarat wajib perangkat: aplikasi tetap berguna tanpa keduanya. -->
+    <uses-feature android:name="android.hardware.camera" android:required="false" />
+    <uses-feature android:name="android.hardware.location.gps" android:required="false" />
 </manifest>

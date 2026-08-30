@@ -4,8 +4,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { LoadingScreen } from "@/components/shell/LoadingScreen";
 import { OfflineScreen } from "@/components/shell/OfflineScreen";
 import { APP_CONFIG } from "@/config";
-import { registerAndroidBackHandler } from "@/lib/capacitor-shell";
 import { canReachTarget, subscribeToConnectionChanges } from "@/lib/connectivity";
+
 
 const TITLE = `${APP_CONFIG.VILLAGE_NAME} — Aplikasi Desa Wisata`;
 const DESCRIPTION = `Aplikasi resmi ${APP_CONFIG.VILLAGE_NAME}. Buka aplikasi untuk melihat informasi desa wisata, wisata, produk, dan layanan terbaru.`;
@@ -52,14 +52,10 @@ function AppShell() {
     void attempt();
   }, [attempt]);
 
-  // Register handler tombol Back Android (no-op di browser biasa).
-  useEffect(() => {
-    let dispose: (() => void) | undefined;
-    void registerAndroidBackHandler().then((fn) => {
-      dispose = fn;
-    });
-    return () => dispose?.();
-  }, []);
+  // Tombol Back Android ditangani di lapisan native (MainActivity.java):
+  // mundur bila ada history, jika tidak tampilkan pilihan Muat Ulang / Keluar.
+
+
 
   // Jika koneksi kembali saat layar offline tampil, coba lagi otomatis.
   useEffect(() => {

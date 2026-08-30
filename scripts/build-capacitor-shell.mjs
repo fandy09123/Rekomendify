@@ -137,18 +137,8 @@ const html = `<!doctype html>
         retry.addEventListener("click", attempt);
         window.addEventListener("online", function () { if (!offline.hidden) attempt(); });
 
-        // Tombol Back Android: mundur jika ada history, keluar jika tidak ada.
-        function registerBack() {
-          var cap = window.Capacitor;
-          var App = cap && cap.Plugins && cap.Plugins.App;
-          if (!App) return;
-          App.addListener("backButton", function (event) {
-            if (event && event.canGoBack) { window.history.back(); }
-            else { App.exitApp(); }
-          });
-        }
-        if (window.Capacitor) registerBack();
-        else document.addEventListener("deviceready", registerBack, { once: true });
+        // Tombol Back Android & permission hardware ditangani di lapisan
+        // native (MainActivity.java), bukan di App Shell.
 
         attempt();
       })();
