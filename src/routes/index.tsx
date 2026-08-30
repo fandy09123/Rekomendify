@@ -52,14 +52,10 @@ function AppShell() {
     void attempt();
   }, [attempt]);
 
-  // Register handler tombol Back Android (no-op di browser biasa).
-  useEffect(() => {
-    let dispose: (() => void) | undefined;
-    void registerAndroidBackHandler().then((fn) => {
-      dispose = fn;
-    });
-    return () => dispose?.();
-  }, []);
+  // Tombol Back Android ditangani di lapisan native (MainActivity.java):
+  // mundur bila ada history, jika tidak tampilkan pilihan Muat Ulang / Keluar.
+
+
 
   // Jika koneksi kembali saat layar offline tampil, coba lagi otomatis.
   useEffect(() => {
