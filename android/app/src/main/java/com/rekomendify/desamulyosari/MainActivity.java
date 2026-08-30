@@ -23,6 +23,7 @@ import androidx.core.content.ContextCompat;
 
 import com.getcapacitor.BridgeActivity;
 import com.getcapacitor.BridgeWebChromeClient;
+import com.getcapacitor.BridgeWebViewClient;
 
 import org.json.JSONObject;
 
@@ -55,6 +56,13 @@ public class MainActivity extends BridgeActivity {
     @Nullable
     private String pendingGeoOrigin;
 
+    /**
+     * URL terakhir yang dimuat WebView, dicatat di UI thread.
+     * WebView.getUrl() hanya boleh dipanggil dari UI thread, sedangkan
+     * @JavascriptInterface berjalan di thread lain — karena itu nilainya di-cache.
+     */
+    private volatile String currentUrl = null;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -64,6 +72,15 @@ public class MainActivity extends BridgeActivity {
         // diputuskan lewat runtime permission Android di bawah.
         webView.getSettings().setGeolocationEnabled(true);
         webView.setWebChromeClient(new ShellWebChromeClient());
+        // Tetap memakai WebViewClient Capacitor (allowlist navigasi utuh),
+        // hanya menambahkan pencatatan URL aktif.
+        webView.setWebViewClient(new BridgeWebViewClient(getBridge()) {
+            @Override
+            public void doUpdateVisitedHistory(WebView view, String url, boolean isReload) {
+                currentUrl = url;
+                super.doUpdateVisitedHistory(view, url, isReload);
+            }
+        });
         webView.addJavascriptInterface(new ShellBridge(), "AndroidShell");
 
         registerBackHandler();
@@ -326,7 +343,20 @@ public class MainActivity extends BridgeActivity {
     }
 
     private boolean isTrustedCaller() {
-        return isTrustedOrigin(getBridge().getWebView().getUrl());
+        return isTrustedOrigin(currentUrl);
+    }
+
+    /**
+     * Case D: user mengubah permission dari Android Settings lalu kembali ke app.
+     * Halaman web diberi tahu agar dapat membaca ulang status (tanpa reload).
+     */
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (currentUrl != null && isTrustedOrigin(currentUrl)) {
+            getBridge().getWebView().evaluateJavascript(
+                    "window.dispatchEvent(new Event('androidshell:permissionschanged'))", null);
+        }
     }
 
     private boolean isTrustedOrigin(@Nullable String url) {
