@@ -4,8 +4,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { LoadingScreen } from "@/components/shell/LoadingScreen";
 import { OfflineScreen } from "@/components/shell/OfflineScreen";
 import { APP_CONFIG } from "@/config";
-import { registerAndroidBackHandler } from "@/lib/capacitor-shell";
 import { canReachTarget, subscribeToConnectionChanges } from "@/lib/connectivity";
+
 
 const TITLE = `${APP_CONFIG.VILLAGE_NAME} — Aplikasi Desa Wisata`;
 const DESCRIPTION = `Aplikasi resmi ${APP_CONFIG.VILLAGE_NAME}. Buka aplikasi untuk melihat informasi desa wisata, wisata, produk, dan layanan terbaru.`;
