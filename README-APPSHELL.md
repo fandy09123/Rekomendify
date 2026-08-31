@@ -171,3 +171,66 @@ dengan PWA/Service Worker milik Rekomendify.
 - Perubahan pada shell (teks loading, `TARGET_URL`), plugin native baru, permission Android
   baru, package ID, icon, atau splash screen → **butuh `npm run build:capacitor` +
   `npx cap sync android` + build & rilis APK baru**.
+
+---
+
+## Native permissions & Muat Ulang (lapisan native)
+
+Semua kapabilitas hardware ditangani di `android/app/src/main/java/.../MainActivity.java`.
+Website Rekomendify tetap menjadi pemilik seluruh business logic (QR, peta, konten).
+
+### Permission (least privilege)
+
+`AndroidManifest.xml` hanya mendeklarasikan: `INTERNET`, `ACCESS_NETWORK_STATE`,
+`CAMERA`, `ACCESS_FINE_LOCATION`, `ACCESS_COARSE_LOCATION`, `POST_NOTIFICATIONS`.
+Kamera & GPS dideklarasikan `uses-feature ... required="false"`.
+
+Tidak ada permission yang diminta saat startup. Alurnya:
+
+```text
+Halaman web meminta kamera (Scan QR)
+  -> WebChromeClient.onPermissionRequest()
+  -> origin diperiksa (harus https://*.rekomendify.com)
+  -> hanya RESOURCE_VIDEO_CAPTURE yang dipertimbangkan (mikrofon selalu deny)
+  -> runtime permission CAMERA diminta bila belum ada
+  -> hasil runtime -> PermissionRequest.grant([camera]) / deny()
+
+Halaman web meminta lokasi (Terdekat)
+  -> onGeolocationPermissionsShowPrompt(origin, callback)
+  -> origin diperiksa -> runtime permission FINE/COARSE_LOCATION
+  -> callback.invoke(origin, granted, false)
+```
+
+Notifikasi diminta hanya lewat bridge (saat user mengaktifkan fiturnya). Jika user
+sudah menolak permanen, tidak ada prompt native lagi — aplikasi membuka
+pengaturan sistem. Tidak ada implementasi FCM baru pada tahap ini.
+
+### Bridge untuk halaman "Privasi & Izin"
+
+Tersedia di WebView sebagai `window.AndroidShell` (hanya untuk origin rekomendify.com):
+
+```js
+AndroidShell.getPermissionStatus()
+// {"platform":"android","camera":"granted|denied|prompt","location":...,"notifications":...}
+AndroidShell.requestCameraPermission()
+AndroidShell.requestLocationPermission()
+AndroidShell.requestNotificationPermission()
+AndroidShell.openAppSettings()
+AndroidShell.reload()
+```
+
+Saat aplikasi kembali foreground, native memicu event
+`androidshell:permissionschanged` sehingga halaman dapat membaca ulang status
+(mis. setelah user mengubah izin dari Android Settings). Status tidak pernah
+dipalsukan: bila `window.AndroidShell` tidak ada, gunakan Permissions API browser.
+
+Helper TypeScript untuk sisi web: `src/lib/capacitor-shell.ts`.
+
+### Muat Ulang
+
+Tekan tombol Back Android saat berada di halaman paling awal (tidak ada history):
+muncul dialog native **Muat Ulang / Keluar / Batal**. `Muat Ulang` menjalankan
+`webView.reload()` — setara refresh browser: URL saat ini dipertahankan, App Shell
+tidak dijalankan ulang, dan cookie/localStorage/IndexedDB/cache tidak dihapus.
+Website juga dapat memanggil `AndroidShell.reload()` dari menunya sendiri.
+Tidak ada overlay tombol permanen di atas UI Rekomendify.

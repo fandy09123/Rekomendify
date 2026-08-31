@@ -45,6 +45,8 @@ public class MainActivity extends BridgeActivity {
 
     private static final String PREFS = "shell_permissions";
     private static final String KEY_NOTIF_ASKED = "notifications_requested";
+    private static final String KEY_CAMERA_ASKED = "camera_requested";
+    private static final String KEY_LOCATION_ASKED = "location_requested";
 
     /** Request WebView kamera yang sedang menunggu hasil runtime permission. */
     @Nullable
@@ -71,7 +73,7 @@ public class MainActivity extends BridgeActivity {
         // Geolocation WebView harus diaktifkan; permission sebenarnya tetap
         // diputuskan lewat runtime permission Android di bawah.
         webView.getSettings().setGeolocationEnabled(true);
-        webView.setWebChromeClient(new ShellWebChromeClient());
+        webView.setWebChromeClient(new ShellWebChromeClient(getBridge()));
         // Tetap memakai WebViewClient Capacitor (allowlist navigasi utuh),
         // hanya menambahkan pencatatan URL aktif.
         webView.setWebViewClient(new BridgeWebViewClient(getBridge()) {
@@ -128,8 +130,8 @@ public class MainActivity extends BridgeActivity {
     // ------------------------------------------------------- chrome client ---
 
     private class ShellWebChromeClient extends BridgeWebChromeClient {
-        ShellWebChromeClient() {
-            super(getBridge());
+        ShellWebChromeClient(com.getcapacitor.Bridge bridge) {
+            super(bridge);
         }
 
         @Override
@@ -159,6 +161,7 @@ public class MainActivity extends BridgeActivity {
                     return;
                 }
                 pendingCameraRequest = request;
+                markAsked(KEY_CAMERA_ASKED);
                 ActivityCompat.requestPermissions(
                         MainActivity.this, new String[] { Manifest.permission.CAMERA }, REQ_CAMERA);
             });
@@ -183,6 +186,7 @@ public class MainActivity extends BridgeActivity {
             }
             pendingGeoCallback = callback;
             pendingGeoOrigin = origin;
+            markAsked(KEY_LOCATION_ASKED);
             ActivityCompat.requestPermissions(MainActivity.this, new String[] {
                     Manifest.permission.ACCESS_FINE_LOCATION,
                     Manifest.permission.ACCESS_COARSE_LOCATION
@@ -246,10 +250,11 @@ public class MainActivity extends BridgeActivity {
             try {
                 JSONObject json = new JSONObject();
                 json.put("platform", "android");
-                json.put("camera", state(Manifest.permission.CAMERA, false));
+                json.put("camera", state(Manifest.permission.CAMERA, asked(KEY_CAMERA_ASKED)));
                 json.put("location", hasPermission(Manifest.permission.ACCESS_FINE_LOCATION)
                         || hasPermission(Manifest.permission.ACCESS_COARSE_LOCATION)
-                        ? "granted" : state(Manifest.permission.ACCESS_FINE_LOCATION, false));
+                        ? "granted"
+                        : state(Manifest.permission.ACCESS_FINE_LOCATION, asked(KEY_LOCATION_ASKED)));
                 json.put("notifications", notificationState());
                 return json.toString();
             } catch (Exception e) {
@@ -260,6 +265,7 @@ public class MainActivity extends BridgeActivity {
         @JavascriptInterface
         public void requestCameraPermission() {
             if (!isTrustedCaller() || hasPermission(Manifest.permission.CAMERA)) return;
+            markAsked(KEY_CAMERA_ASKED);
             runOnUiThread(() -> ActivityCompat.requestPermissions(
                     MainActivity.this, new String[] { Manifest.permission.CAMERA }, REQ_CAMERA));
         }
@@ -269,6 +275,7 @@ public class MainActivity extends BridgeActivity {
             if (!isTrustedCaller()) return;
             if (hasPermission(Manifest.permission.ACCESS_FINE_LOCATION)
                     || hasPermission(Manifest.permission.ACCESS_COARSE_LOCATION)) return;
+            markAsked(KEY_LOCATION_ASKED);
             runOnUiThread(() -> ActivityCompat.requestPermissions(MainActivity.this, new String[] {
                     Manifest.permission.ACCESS_FINE_LOCATION,
                     Manifest.permission.ACCESS_COARSE_LOCATION
@@ -325,8 +332,7 @@ public class MainActivity extends BridgeActivity {
             return NotificationManagerCompat.from(this).areNotificationsEnabled() ? "granted" : "denied";
         }
         if (hasPermission(Manifest.permission.POST_NOTIFICATIONS)) return "granted";
-        return state(Manifest.permission.POST_NOTIFICATIONS,
-                getSharedPreferences(PREFS, MODE_PRIVATE).getBoolean(KEY_NOTIF_ASKED, false));
+        return state(Manifest.permission.POST_NOTIFICATIONS, asked(KEY_NOTIF_ASKED));
     }
 
     /** "granted" / "denied" (sudah pernah diminta) / "prompt" (belum pernah diminta). */
@@ -336,6 +342,14 @@ public class MainActivity extends BridgeActivity {
             return "denied";
         }
         return "prompt";
+    }
+
+    private boolean asked(String key) {
+        return getSharedPreferences(PREFS, MODE_PRIVATE).getBoolean(key, false);
+    }
+
+    private void markAsked(String key) {
+        getSharedPreferences(PREFS, MODE_PRIVATE).edit().putBoolean(key, true).apply();
     }
 
     private boolean hasPermission(String permission) {

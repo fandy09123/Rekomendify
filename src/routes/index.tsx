@@ -6,7 +6,6 @@ import { OfflineScreen } from "@/components/shell/OfflineScreen";
 import { APP_CONFIG } from "@/config";
 import { canReachTarget, subscribeToConnectionChanges } from "@/lib/connectivity";
 
-
 const TITLE = `${APP_CONFIG.VILLAGE_NAME} — Aplikasi Desa Wisata`;
 const DESCRIPTION = `Aplikasi resmi ${APP_CONFIG.VILLAGE_NAME}. Buka aplikasi untuk melihat informasi desa wisata, wisata, produk, dan layanan terbaru.`;
 
@@ -54,8 +53,6 @@ function AppShell() {
 
   // Tombol Back Android ditangani di lapisan native (MainActivity.java):
   // mundur bila ada history, jika tidak tampilkan pilihan Muat Ulang / Keluar.
-
-
 
   // Jika koneksi kembali saat layar offline tampil, coba lagi otomatis.
   useEffect(() => {
