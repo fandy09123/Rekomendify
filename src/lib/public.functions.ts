@@ -34,21 +34,37 @@ export const getRegionContact = createServerFn({ method: "GET" })
     return region ?? null;
   });
 
+/** Kolom kartu lokasi — cukup untuk daftar, pencarian, filter, dan jarak. */
+const LOCATION_CARD_COLUMNS =
+  "id, slug, name, photo_url, description, coordinates, hours, price_range, is_featured, category_id, sort_order";
+
+const REGION_PUBLIC_COLUMNS =
+  "id, slug, name, tagline, description, cover_image_url, welcome_message, mascot_name, coordinates, admin_whatsapp";
+
+const CATEGORY_COLUMNS = "id, region_id, slug, name, icon, color, sort_order";
+
 export const getRegionBySlug = createServerFn({ method: "GET" })
   .validator((data: any) => z.object({ slug: z.string().min(1) }).parse(data))
   .handler(async ({ data }) => {
     const sb = pub();
     const { data: region, error } = await sb
       .from("regions")
-      .select("*")
+      .select(REGION_PUBLIC_COLUMNS)
       .eq("slug", data.slug)
       .eq("is_published", true)
       .maybeSingle();
     if (error) throw new Error(error.message);
     if (!region) return null;
     const [{ data: categories }, { data: locations }] = await Promise.all([
-      sb.from("categories").select("*").or(`region_id.eq.${region.id},region_id.is.null`).order("sort_order"),
-      sb.from("locations").select("*").eq("region_id", region.id).eq("is_published", true).order("is_featured", { ascending: false }).order("sort_order"),
+      sb.from("categories").select(CATEGORY_COLUMNS).or(`region_id.eq.${region.id},region_id.is.null`).order("sort_order"),
+      sb
+        .from("locations")
+        .select(LOCATION_CARD_COLUMNS)
+        .eq("region_id", region.id)
+        .eq("is_published", true)
+        .order("is_featured", { ascending: false })
+        .order("sort_order")
+        .limit(300),
     ]);
     return { region, categories: categories ?? [], locations: locations ?? [] };
   });
@@ -60,7 +76,9 @@ export const getLocationBySlug = createServerFn({ method: "GET" })
     const { data: region } = await sb.from("regions").select("id, slug, name, admin_whatsapp").eq("slug", data.regionSlug).eq("is_published", true).maybeSingle();
     if (!region) return null;
 
-    const [{ data: location, error }, { data: otherLocations }, { data: categories }, { data: couriers }] = await Promise.all([
+    // Kategori tidak lagi di-query terpisah: nama kategori sudah ikut pada
+    // relasi `categories(...)` di setiap kartu rekomendasi.
+    const [{ data: location, error }, { data: otherLocations }, { data: couriers }] = await Promise.all([
       sb
         .from("locations")
         .select("*, categories(id, name, slug, icon, color)")
@@ -68,18 +86,15 @@ export const getLocationBySlug = createServerFn({ method: "GET" })
         .eq("slug", data.locationSlug)
         .eq("is_published", true)
         .maybeSingle(),
+      // Hanya sebagian yang benar-benar dirender sebagai rekomendasi.
       sb
         .from("locations")
         .select("id, slug, name, photo_url, hours, price_range, is_featured, category_id, categories(id, name, slug, icon, color)")
         .eq("region_id", region.id)
         .eq("is_published", true)
         .neq("slug", data.locationSlug)
-        .order("is_featured", { ascending: false }),
-      sb
-        .from("categories")
-        .select("*")
-        .or(`region_id.eq.${region.id},region_id.is.null`)
-        .order("sort_order"),
+        .order("is_featured", { ascending: false })
+        .limit(12),
       sb
         .from("couriers")
         .select("id, name, whatsapp, coordinates")
@@ -91,7 +106,7 @@ export const getLocationBySlug = createServerFn({ method: "GET" })
     if (error) throw new Error(error.message);
     if (!location) return null;
 
-    return { region, location, otherLocations: otherLocations ?? [], categories: categories ?? [], couriers: couriers ?? [] };
+    return { region, location, otherLocations: otherLocations ?? [], categories: [], couriers: couriers ?? [] };
   });
 
 export const resolveQrCode = createServerFn({ method: "GET" })
