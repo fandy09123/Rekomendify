@@ -3,16 +3,25 @@ import type { CapacitorConfig } from "@capacitor/cli";
 /**
  * Konfigurasi Capacitor untuk App Shell.
  *
- * CATATAN untuk developer:
- * - `appId` dan `appName` di bawah adalah CONTOH. Ganti sesuai identitas rilis
- *   Anda SEBELUM menjalankan `npx cap add android`. Mengubah appId setelah
- *   aplikasi rilis di Play Store tidak dimungkinkan.
- * - `webDir` harus menunjuk ke folder hasil build web yang berisi index.html.
- *   Folder ini dihasilkan oleh `npm run build:capacitor`.
+ * Blok TENANT_CONFIG di bawah DIHASILKAN OTOMATIS oleh `npm run sync-tenant`
+ * dari tenant.config.json. Jangan mengeditnya manual; kode di luar blok tetap
+ * milik developer dan tidak disentuh oleh script.
+ *
+ * Catatan: `server.url` TIDAK dipakai. Shell statis dibundel ke APK dan
+ * melakukan redirect penuh ke TARGET_URL setelah connectivity check, sehingga
+ * APK tetap punya layar offline yang berguna saat website tidak terjangkau.
  */
-const config: CapacitorConfig = {
+// TENANT_CONFIG_START
+const TENANT = {
   appId: "com.rekomendify.desamulyosari",
   appName: "Desa Mulyosari",
+  navigationHosts: ["www.rekomendify.com", "rekomendify.com", "*.rekomendify.com"],
+};
+// TENANT_CONFIG_END
+
+const config: CapacitorConfig = {
+  appId: TENANT.appId,
+  appName: TENANT.appName,
   webDir: "dist/capacitor",
   android: {
     // Konten dilayani lewat https:// agar cookie/secure context website target
@@ -24,7 +33,7 @@ const config: CapacitorConfig = {
     // Domain berikut tetap dibuka DI DALAM WebView (pengalaman in-app).
     // Domain/skema lain (tel:, mailto:, whatsapp:, maps, dsb.) diserahkan ke
     // Android agar dibuka oleh aplikasi yang tepat.
-    allowNavigation: ["www.rekomendify.com", "rekomendify.com", "*.rekomendify.com"],
+    allowNavigation: TENANT.navigationHosts,
   },
 };
 

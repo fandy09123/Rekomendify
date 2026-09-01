@@ -1,10 +1,14 @@
 apply plugin: 'com.android.application'
 
+// TENANT_CONFIG_START — dihasilkan oleh `npm run sync-tenant`, jangan edit manual
+def tenantApplicationId = "com.rekomendify.desamulyosari"
+// TENANT_CONFIG_END
+
 android {
-    namespace "com.rekomendify.desamulyosari"
+    namespace tenantApplicationId
     compileSdk rootProject.ext.compileSdkVersion
     defaultConfig {
-        applicationId "com.rekomendify.desamulyosari"
+        applicationId tenantApplicationId
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
