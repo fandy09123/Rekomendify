@@ -8,6 +8,7 @@ import { HomeHero } from "@/components/home-hero";
 import { PageShell, LocationCard } from "@/components/rekomendify";
 import { ArrowLeft, Bookmark, LayoutGrid, MoreHorizontal } from "lucide-react";
 import { setLastRegion, clearLastRegion } from "@/lib/last-region";
+import { shouldRecordVisit } from "@/lib/visit-tracking";
 import { seededShuffle, useSessionSeed } from "@/lib/ordering";
 import { ShareButton } from "@/components/share-button";
 import { PushFollowButton } from "@/components/push-follow-button";
@@ -90,7 +91,11 @@ function RegionPage() {
 
   useEffect(() => {
     if (!data?.region) return;
-    recordVisit({ data: { regionId: data.region.id, source: src ?? "direct" } }).catch(() => {});
+    // Satu kunjungan per wilayah per sesi/30 menit — bolak-balik navigasi tidak
+    // lagi menghasilkan INSERT berulang.
+    if (shouldRecordVisit(`region:${data.region.id}:${src ?? "direct"}`)) {
+      recordVisit({ data: { regionId: data.region.id, source: src ?? "direct" } }).catch(() => {});
+    }
     setLastRegion(data.region.slug);
   }, [data?.region?.id, data?.region?.slug, src]);
 
