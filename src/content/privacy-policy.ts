@@ -60,7 +60,7 @@ export const PRIVACY_POLICY: PrivacyPolicyData = {
     website: "https://www.rekomendify.com",
     privacyPage: "https://www.rekomendify.com/privasi",
     email: "alfianfendi2@gmail.com",
-    address: "Jl. Raya Pagerwojo, Kecamatan Pagerwojo, Kabupaten Tulungagung, Jawa Timur 66262",
+    address: "Jl. Raya Pagerwojo, Desa Mulyosari Kecamatan Pagerwojo, Kabupaten Tulungagung, Jawa Timur 66262",
     deletionEmailSubject: "Permohonan Penghapusan Akun Admin - [Nama Desa/Wilayah]",
   },
 
