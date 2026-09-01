@@ -1,0 +1,8 @@
+{
+  "$comment": "SUMBER KEBENARAN TUNGGAL identitas tenant (desa). Ubah file ini, lalu jalankan `npm run sync-tenant`. TIDAK BOLEH berisi secret/API key. Nilai dapat dioverride lokal lewat .env (lihat .env.example).",
+  "villageSlug": "mulyosari",
+  "villageName": "Desa Mulyosari",
+  "appName": "Desa Mulyosari",
+  "appId": "com.rekomendify.desamulyosari",
+  "targetUrl": "https://www.rekomendify.com/r/desa-wisata-mulyosari"
+}
