@@ -152,11 +152,10 @@ export function usePushSubscription(): PushState {
       setPermission(Notification.permission);
 
       try {
-        const cfg = await getPushConfig();
-        if (!alive) return;
-        publicKeyRef.current = cfg.publicKey ?? DEFAULT_VAPID_PUBLIC_KEY;
+        // Public key sudah ada di bundle (aman & memang untuk browser), jadi
+        // tidak perlu satu server function call di setiap mount halaman.
+        publicKeyRef.current = DEFAULT_VAPID_PUBLIC_KEY;
         setConfigured(Boolean(publicKeyRef.current));
-
 
         const reg = await getSwRegistrationWithTimeout(2500);
         if (reg) {
@@ -164,8 +163,17 @@ export function usePushSubscription(): PushState {
           if (!alive) return;
           if (existing && Notification.permission === "granted") {
             setSubscribed(true);
-            const res = await syncPushSubscription({ data: toPayload(existing) });
-            if (alive) setRegionSlugs(res.regionSlugs ?? []);
+            const cached = readSyncCache(existing.endpoint);
+            if (cached) {
+              // Langganan tidak berubah dan baru saja disinkronkan — cukup pakai
+              // daftar wilayah dari cache perangkat, tanpa write ke database.
+              if (alive) setRegionSlugs(cached);
+            } else {
+              const res = await syncPushSubscription({ data: toPayload(existing) });
+              if (!alive) return;
+              setRegionSlugs(res.regionSlugs ?? []);
+              writeSyncCache(existing.endpoint, res.regionSlugs ?? []);
+            }
           }
         }
       } catch {
