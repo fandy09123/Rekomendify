@@ -90,7 +90,11 @@ function RegionPage() {
 
   useEffect(() => {
     if (!data?.region) return;
-    recordVisit({ data: { regionId: data.region.id, source: src ?? "direct" } }).catch(() => {});
+    // Satu kunjungan per wilayah per sesi/30 menit — bolak-balik navigasi tidak
+    // lagi menghasilkan INSERT berulang.
+    if (shouldRecordVisit(`region:${data.region.id}:${src ?? "direct"}`)) {
+      recordVisit({ data: { regionId: data.region.id, source: src ?? "direct" } }).catch(() => {});
+    }
     setLastRegion(data.region.slug);
   }, [data?.region?.id, data?.region?.slug, src]);
 
