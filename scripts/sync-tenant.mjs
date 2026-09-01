@@ -81,8 +81,6 @@ function replaceMarkerBlock(contents, relPath, block) {
 }
 
 function queue(abs, contents, label) {
-  const current = existsSync(abs) ? null : "";
-  void current;
   writes.push({ abs, contents, label });
 }
 
@@ -249,9 +247,11 @@ export const TENANT = {
 // ---------------------------------------------------------------------------
 // 7. Tulis (atau tampilkan dry-run)
 // ---------------------------------------------------------------------------
-const changed = writes.filter(
-  (w) => !existsSync(w.abs) || (await readFile(w.abs, "utf8")) !== w.contents,
-);
+const changed = [];
+for (const w of writes) {
+  const isNew = !existsSync(w.abs);
+  if (isNew || (await readFile(w.abs, "utf8")) !== w.contents) changed.push(w);
+}
 
 if (dryRun) {
   console.log("\n--dry-run: tidak ada file yang ditulis.\nWill change:");

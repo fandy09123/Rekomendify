@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite dev",
     "build": "vite build",
-    "build:capacitor": "vite build && node scripts/build-capacitor-shell.mjs",
+    "sync-tenant": "node scripts/sync-tenant.mjs",
+    "build:capacitor": "node scripts/sync-tenant.mjs && vite build && node scripts/build-capacitor-shell.mjs",
     "build:dev": "vite build --mode development",
     "preview": "vite preview",
     "lint": "eslint .",

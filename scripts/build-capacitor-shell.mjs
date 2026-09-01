@@ -15,9 +15,11 @@
  *
  * Jalankan: npm run build:capacitor
  */
-import { mkdir, readFile, readdir, writeFile, copyFile } from "node:fs/promises";
+import { mkdir, readdir, writeFile, copyFile } from "node:fs/promises";
 import { existsSync } from "node:fs";
 import path from "node:path";
+
+import { loadTenantConfig } from "./tenant-config.mjs";
 
 const root = process.cwd();
 
@@ -33,15 +35,16 @@ function fail(message) {
   process.exit(1);
 }
 
-// --- 1. Baca konfigurasi dari src/config.ts (single source of truth) ---------
-const configSource = await readFile(path.join(root, "src", "config.ts"), "utf8");
-const read = (key) => {
-  const match = configSource.match(new RegExp(`${key}:\\s*"([^"]+)"`));
-  if (!match) fail(`Tidak menemukan ${key} di src/config.ts`);
-  return match[1];
-};
-const TARGET_URL = read("TARGET_URL");
-const VILLAGE_NAME = read("VILLAGE_NAME");
+// --- 1. Baca konfigurasi tenant (single source of truth) ---------------------
+let TARGET_URL;
+let VILLAGE_NAME;
+try {
+  const { config } = await loadTenantConfig();
+  TARGET_URL = config.targetUrl;
+  VILLAGE_NAME = config.villageName;
+} catch (error) {
+  fail(`Konfigurasi tenant tidak valid:\n${error.message}`);
+}
 
 // --- 2. Ambil CSS Tailwind hasil build --------------------------------------
 if (!existsSync(clientDir)) {
