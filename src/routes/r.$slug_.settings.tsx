@@ -8,7 +8,7 @@ import {
   ArrowLeft, DoorOpen, Info, HelpCircle, Lightbulb, Megaphone, Handshake,
   ChevronRight, ShieldCheck, LogOut, Store, AlertTriangle, MessageCircle,
 } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getRegionContact } from "@/lib/public.functions";
 import { waChatUrl } from "@/lib/geo";
 import { InstallAppCard } from "@/components/install-app";
@@ -54,9 +54,22 @@ function RegionSettings() {
   const { slug } = Route.useParams();
   const { email, isAdmin } = useAdminSession();
   const navigate = useNavigate();
+  // Bila pengguna datang dari beranda wilayah, data wilayah (termasuk WhatsApp
+  // admin) sudah ada di cache — tidak perlu request tambahan.
+  const queryClient = useQueryClient();
+  const cachedRegion = queryClient.getQueryData<any>(["region", slug])?.region;
   const { data: regionContact } = useQuery({
     queryKey: ["region-contact", slug],
     queryFn: () => getRegionContact({ data: { slug } }),
+    initialData: cachedRegion
+      ? {
+          id: cachedRegion.id,
+          slug: cachedRegion.slug,
+          name: cachedRegion.name,
+          admin_whatsapp: cachedRegion.admin_whatsapp ?? null,
+        }
+      : undefined,
+    staleTime: 15 * 60 * 1000,
   });
   const adminWa = regionContact?.admin_whatsapp ?? null;
   const regionName = regionContact?.name ?? slug;

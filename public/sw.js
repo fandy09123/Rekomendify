@@ -6,10 +6,14 @@
  *   - API/Supabase/server function: network-only (tidak di-cache)
  */
 
-// v4: showNotification() dipanggil sebelum penulisan inbox pada handler push.
-const CACHE_VERSION = "v4";
+// v5: gambar publik Supabase Storage ikut di-cache (immutable, cacheControl 1 tahun).
+const CACHE_VERSION = "v5";
 const STATIC_CACHE = `rekomendify-static-${CACHE_VERSION}`;
 const FONT_CACHE   = `rekomendify-fonts-${CACHE_VERSION}`;
+// Cache gambar dipertahankan lintas versi supaya update aplikasi tidak memaksa
+// perangkat mengunduh ulang seluruh foto (egress Supabase Storage).
+const IMAGE_CACHE  = "rekomendify-images-v1";
+const IMAGE_CACHE_LIMIT = 120;
 
 const STATIC_ASSETS = [
   "/",
@@ -72,7 +76,7 @@ self.addEventListener("activate", (event) => {
     caches.keys().then((keys) =>
       Promise.all(
         keys
-          .filter((k) => k !== STATIC_CACHE && k !== FONT_CACHE)
+          .filter((k) => k !== STATIC_CACHE && k !== FONT_CACHE && k !== IMAGE_CACHE)
           .map((k) => caches.delete(k))
       )
     )
@@ -91,6 +95,27 @@ self.addEventListener("fetch", (event) => {
 
   // Lewati request non-GET dan request ke origin lain selain Google Fonts
   if (request.method !== "GET") return;
+
+  // Gambar publik Supabase Storage → cache-first.
+  // Objek diunggah dengan key unik + cacheControl 1 tahun (upsert: false),
+  // jadi URL bersifat immutable dan aman disimpan permanen di perangkat.
+  if (
+    url.hostname.includes("supabase.co") &&
+    url.pathname.startsWith("/storage/v1/object/public/")
+  ) {
+    event.respondWith(
+      caches.open(IMAGE_CACHE).then(async (cache) => {
+        const cached = await cache.match(request);
+        if (cached) return cached;
+        const resp = await fetch(request);
+        if (resp.ok) {
+          cache.put(request, resp.clone()).then(() => trimImageCache(cache));
+        }
+        return resp;
+      })
+    );
+    return;
+  }
 
   // API Supabase dan TanStack server function → network-only, jangan cache.
   // Server function menggunakan endpoint /_serverFn/* (bukan /_server/*) dan
@@ -154,6 +179,19 @@ self.addEventListener("fetch", (event) => {
     )
   );
 });
+
+/** Menjaga cache gambar tetap terbatas (FIFO sederhana). */
+async function trimImageCache(cache) {
+  try {
+    const keys = await cache.keys();
+    if (keys.length <= IMAGE_CACHE_LIMIT) return;
+    for (const req of keys.slice(0, keys.length - IMAGE_CACHE_LIMIT)) {
+      await cache.delete(req);
+    }
+  } catch {
+    /* abaikan */
+  }
+}
 
 // ── Inbox notifikasi lokal (IndexedDB) ───────────────────────────────────────
 // Ditulis dari dalam Service Worker supaya riwayat tetap terisi walau tidak ada
