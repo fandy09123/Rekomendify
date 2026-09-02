@@ -75,7 +75,10 @@ async function mustRead(relPath) {
 function replaceMarkerBlock(contents, relPath, block) {
   const re = /(\/\/ TENANT_CONFIG_START[^\n]*\n)[\s\S]*?(\n\/\/ TENANT_CONFIG_END)/;
   if (!re.test(contents)) {
-    abort("Expected configuration structure not found.", `Marker TENANT_CONFIG tidak ada di ${relPath}.`);
+    abort(
+      "Expected configuration structure not found.",
+      `Marker TENANT_CONFIG tidak ada di ${relPath}.`,
+    );
   }
   return contents.replace(re, (_m, start, end) => `${start}${block}${end}`);
 }
@@ -86,11 +89,7 @@ function queue(abs, contents, label) {
 
 const jsStr = (value) => JSON.stringify(value);
 const xmlEscape = (value) =>
-  value
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
+  value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 
 // ---------------------------------------------------------------------------
 // 2. Web / App Shell: src/tenant.generated.ts
@@ -135,14 +134,21 @@ export const TENANT = {
 {
   const relPath = "android/app/build.gradle";
   const { abs, contents } = await mustRead(relPath);
-  if (!/namespace\s+tenantApplicationId/.test(contents) || !/applicationId\s+tenantApplicationId/.test(contents)) {
+  if (
+    !/namespace\s+tenantApplicationId/.test(contents) ||
+    !/applicationId\s+tenantApplicationId/.test(contents)
+  ) {
     abort(
       "Expected Android configuration structure not found.",
       `${relPath} harus memakai \`namespace tenantApplicationId\` dan \`applicationId tenantApplicationId\`.`,
     );
   }
   const block = `def tenantApplicationId = ${jsStr(tenant.appId)}`;
-  queue(abs, replaceMarkerBlock(contents, relPath, block), "Android applicationId + namespace (build.gradle)");
+  queue(
+    abs,
+    replaceMarkerBlock(contents, relPath, block),
+    "Android applicationId + namespace (build.gradle)",
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -161,7 +167,10 @@ export const TENANT = {
   for (const [key, value] of Object.entries(values)) {
     const re = new RegExp(`(<string name="${key}">)([\\s\\S]*?)(</string>)`);
     if (!re.test(next)) {
-      abort("Expected Android configuration structure not found.", `String "${key}" tidak ada di ${relPath}.`);
+      abort(
+        "Expected Android configuration structure not found.",
+        `String "${key}" tidak ada di ${relPath}.`,
+      );
     }
     next = next.replace(re, (_m, open, _old, close) => `${open}${xmlEscape(value)}${close}`);
   }
@@ -174,7 +183,10 @@ export const TENANT = {
 {
   const javaRoot = path.join(ROOT, "android", "app", "src", "main", "java");
   if (!existsSync(javaRoot)) {
-    abort("Expected Android configuration structure not found.", "Folder android/app/src/main/java tidak ada.");
+    abort(
+      "Expected Android configuration structure not found.",
+      "Folder android/app/src/main/java tidak ada.",
+    );
   }
 
   // Cari direktori yang berisi MainActivity.java (satu-satunya sumber paket app).
@@ -231,7 +243,10 @@ export const TENANT = {
     files.push({ name: entry.name, contents: source });
   }
   if (files.length === 0) {
-    abort("Unsafe tenant sync. Manual review required.", "Tidak ada file .java pada paket aplikasi.");
+    abort(
+      "Unsafe tenant sync. Manual review required.",
+      "Tidak ada file .java pada paket aplikasi.",
+    );
   }
 
   if (path.resolve(currentDir) !== path.resolve(targetDir)) {
@@ -239,7 +254,11 @@ export const TENANT = {
     summary.push(`Java package ${currentPackage} -> ${tenant.appId}`);
   } else {
     for (const file of files) {
-      queue(path.join(targetDir, file.name), file.contents, `Java ${file.name} (package + trusted host)`);
+      queue(
+        path.join(targetDir, file.name),
+        file.contents,
+        `Java ${file.name} (package + trusted host)`,
+      );
     }
   }
 }
@@ -257,7 +276,10 @@ if (dryRun) {
   console.log("\n--dry-run: tidak ada file yang ditulis.\nWill change:");
   if (changed.length === 0 && !javaMove) console.log("  (tidak ada perubahan — sudah sinkron)");
   for (const w of changed) console.log(`  ${rel(w.abs)}`);
-  if (javaMove) console.log(`  ${rel(javaMove.from)} -> ${rel(javaMove.to)} (${javaMove.files.length} file .java)`);
+  if (javaMove)
+    console.log(
+      `  ${rel(javaMove.from)} -> ${rel(javaMove.to)} (${javaMove.files.length} file .java)`,
+    );
   process.exit(0);
 }
 
@@ -300,5 +322,7 @@ console.log("\nNext steps:");
 console.log("1. git diff        (periksa perubahan tenant)");
 console.log("2. npm run build:capacitor");
 console.log("3. npx cap sync android");
-console.log("4. cd android && .\\gradlew.bat assembleDebug   (macOS/Linux: ./gradlew assembleDebug)");
+console.log(
+  "4. cd android && .\\gradlew.bat assembleDebug   (macOS/Linux: ./gradlew assembleDebug)",
+);
 console.log("========================================\n");
