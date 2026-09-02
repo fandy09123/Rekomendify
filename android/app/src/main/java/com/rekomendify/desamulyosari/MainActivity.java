@@ -1,4 +1,4 @@
-package com.rekomendify.desapagerwojo;
+package com.rekomendify.desamulyosari;
 
 import android.Manifest;
 import android.app.AlertDialog;
