@@ -93,7 +93,9 @@ export function validateTenantConfig(raw) {
   const targetUrl = str("targetUrl");
 
   if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(villageSlug)) {
-    errors.push("VILLAGE_SLUG harus lowercase a-z, 0-9, dipisah '-' (contoh: desa-wisata-mulyosari).");
+    errors.push(
+      "VILLAGE_SLUG harus lowercase a-z, 0-9, dipisah '-' (contoh: desa-wisata-mulyosari).",
+    );
   }
   if (villageName.length < 2 || villageName.length > 60 || /[<>\n\r]/.test(villageName)) {
     errors.push("VILLAGE_NAME harus 2-60 karakter tanpa karakter markup.");
@@ -104,12 +106,59 @@ export function validateTenantConfig(raw) {
 
   const segments = appId.split(".");
   const RESERVED = new Set([
-    "abstract", "assert", "boolean", "break", "byte", "case", "catch", "char", "class", "const",
-    "continue", "default", "do", "double", "else", "enum", "extends", "final", "finally", "float",
-    "for", "goto", "if", "implements", "import", "instanceof", "int", "interface", "long", "native",
-    "new", "package", "private", "protected", "public", "return", "short", "static", "strictfp",
-    "super", "switch", "synchronized", "this", "throw", "throws", "transient", "try", "void",
-    "volatile", "while", "true", "false", "null",
+    "abstract",
+    "assert",
+    "boolean",
+    "break",
+    "byte",
+    "case",
+    "catch",
+    "char",
+    "class",
+    "const",
+    "continue",
+    "default",
+    "do",
+    "double",
+    "else",
+    "enum",
+    "extends",
+    "final",
+    "finally",
+    "float",
+    "for",
+    "goto",
+    "if",
+    "implements",
+    "import",
+    "instanceof",
+    "int",
+    "interface",
+    "long",
+    "native",
+    "new",
+    "package",
+    "private",
+    "protected",
+    "public",
+    "return",
+    "short",
+    "static",
+    "strictfp",
+    "super",
+    "switch",
+    "synchronized",
+    "this",
+    "throw",
+    "throws",
+    "transient",
+    "try",
+    "void",
+    "volatile",
+    "while",
+    "true",
+    "false",
+    "null",
   ]);
   const segmentOk = (s) => /^[a-z][a-z0-9_]*$/.test(s) && !RESERVED.has(s);
   if (segments.length < 2 || !segments.every(segmentOk)) {
