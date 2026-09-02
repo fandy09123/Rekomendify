@@ -1,7 +1,7 @@
 apply plugin: 'com.android.application'
 
 // TENANT_CONFIG_START — dihasilkan oleh `npm run sync-tenant`, jangan edit manual
-def tenantApplicationId = "com.rekomendify.desamulyosari"
+def tenantApplicationId = "com.rekomendify.desapagerwojo"
 // TENANT_CONFIG_END
 
 android {

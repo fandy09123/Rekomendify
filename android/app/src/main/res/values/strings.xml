@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">Desa Mulyosari</string>
-    <string name="title_activity_main">Desa Mulyosari</string>
-    <string name="package_name">com.rekomendify.desamulyosari</string>
-    <string name="custom_url_scheme">com.rekomendify.desamulyosari</string>
+    <string name="app_name">Desa Pagerwojo</string>
+    <string name="title_activity_main">Desa Pagerwojo</string>
+    <string name="package_name">com.rekomendify.desapagerwojo</string>
+    <string name="custom_url_scheme">com.rekomendify.desapagerwojo</string>
 </resources>
