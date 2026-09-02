@@ -15,20 +15,58 @@ https://www.rekomendify.com/r/desa-wisata-mulyosari
 
 ---
 
-## 1. Konfigurasi (satu-satunya tempat yang diubah)
+## 1. Konfigurasi tenant (satu-satunya tempat yang diubah)
 
-`src/config.ts`
+`tenant.config.json` di root project:
 
-```ts
-export const APP_CONFIG = {
-  TARGET_URL: "https://www.rekomendify.com/r/desa-wisata-mulyosari",
-  VILLAGE_NAME: "Desa Mulyosari",
-};
+```json
+{
+  "villageSlug": "mulyosari",
+  "villageName": "Desa Mulyosari",
+  "appName": "Desa Mulyosari",
+  "appId": "com.rekomendify.desamulyosari",
+  "targetUrl": "https://www.rekomendify.com/r/desa-wisata-mulyosari"
+}
 ```
 
-Semua teks (loading, offline, judul halaman) dan logika redirect membaca dari file ini —
-termasuk shell statis yang dibundel ke APK. Tidak ada form/settings/localStorage yang bisa
-mengubah URL dari sisi user.
+Setelah mengubahnya jalankan:
+
+```bash
+npm run sync-tenant             # tulis perubahan
+npm run sync-tenant -- --dry-run  # lihat file yang akan berubah, tanpa menulis
+```
+
+Script menyinkronkan identitas tenant ke: `src/tenant.generated.ts` (dipakai `src/config.ts`,
+App Shell, dan shell statis APK), blok `TENANT_CONFIG` di `capacitor.config.ts`, blok
+`TENANT_CONFIG` di `android/app/build.gradle` (`namespace` + `applicationId`),
+`android/app/src/main/res/values/strings.xml`, serta direktori + deklarasi `package` Java
+`MainActivity` dan konstanta `TRUSTED_HOST_SUFFIX`.
+
+Override lokal opsional: buat `.env` (lihat `.env.example`) dengan `VILLAGE_SLUG`,
+`VILLAGE_NAME`, `APP_NAME`, `APP_ID`, `TARGET_URL`. Prioritas: `process.env` > `.env` >
+`tenant.config.json`. Semua nilai ini bersifat publik/build-time — **jangan** pernah menaruh
+secret, API key, atau keystore password di sana. Tidak ada form/settings/localStorage yang bisa
+mengubah URL dari sisi user; tenant adalah build-time config, bukan pilihan runtime.
+
+Validasi wajib lolos sebelum satu file pun ditulis: slug lowercase/`-`, `APP_NAME` 2–30
+karakter, `APP_ID` package Java valid (lowercase, ≥2 segmen, bukan keyword), `TARGET_URL`
+wajib `https://`. Bila struktur file target tidak sesuai (marker hilang, dua `MainActivity`,
+dsb.) script berhenti dengan pesan jelas dan **tidak** mengubah file apa pun. Tidak ada file
+`.bak` — periksa hasilnya dengan `git diff`.
+
+### Membuat APK desa baru
+
+```bash
+# 1) ubah tenant.config.json (atau .env)
+npm run sync-tenant
+git diff                    # periksa perubahan identitas
+npm run build:capacitor     # sudah menjalankan sync-tenant otomatis
+npx cap sync android
+cd android && ./gradlew assembleDebug     # Windows: .\gradlew.bat assembleDebug
+```
+
+Catatan: mengubah `appId` = aplikasi Android yang berbeda (APK/listing Play Store baru).
+Icon & splash screen tetap aset per-desa yang diganti manual di `android/app/src/main/res`.
 
 ---
 
