@@ -8,14 +8,24 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
   const navigate = useNavigate();
   const qc = useQueryClient();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
-  const { data: profile } = useQuery({ queryKey: ["my-profile"], queryFn: () => myProfile() });
-  // Satu cache key kanonik ("my-region") bersama halaman admin lain, sehingga
-  // myRegion tidak dipanggil dua kali (shell + halaman) untuk data yang sama.
+  // Satu sumber data untuk shell: myRegion sudah mengembalikan profil
+  // (is_active + region_id), jadi query "my-profile" terpisah tidak lagi
+  // dijalankan pada setiap halaman admin. Query key kanonik "my-region"
+  // dipakai bersama halaman admin lain sehingga hanya satu request.
   const { data: my } = useQuery({
     queryKey: ["my-region"],
     queryFn: () => myRegion(),
-    enabled: !!profile?.is_active,
+    staleTime: 60_000,
   });
+  const profile = my?.profile;
+  // Email hanya dibutuhkan pada layar "akun belum aktif" (kasus jarang),
+  // jadi diambil belakangan dan hanya saat memang ditampilkan.
+  const { data: fullProfile } = useQuery({
+    queryKey: ["my-profile"],
+    queryFn: () => myProfile(),
+    enabled: profile != null && !profile.is_active,
+  });
+
   const region = my?.region;
 
   const items = [
