@@ -172,6 +172,8 @@ function RootComponent() {
       <Toaster />
       <PwaInstallBanner />
       <OnboardingGate />
+      <OfflineBanner />
+
     </QueryClientProvider>
   );
 }
