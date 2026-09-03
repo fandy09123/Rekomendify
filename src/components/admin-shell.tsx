@@ -9,11 +9,14 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
   const qc = useQueryClient();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const { data: profile } = useQuery({ queryKey: ["my-profile"], queryFn: () => myProfile() });
-  const { data: region } = useQuery({
-    queryKey: ["my-region-name"],
-    queryFn: async () => (await myRegion()).region,
+  // Satu cache key kanonik ("my-region") bersama halaman admin lain, sehingga
+  // myRegion tidak dipanggil dua kali (shell + halaman) untuk data yang sama.
+  const { data: my } = useQuery({
+    queryKey: ["my-region"],
+    queryFn: () => myRegion(),
     enabled: !!profile?.is_active,
   });
+  const region = my?.region;
 
   const items = [
     { to: "/admin", label: "Dashboard", icon: LayoutDashboard },
