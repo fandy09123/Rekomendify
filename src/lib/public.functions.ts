@@ -36,8 +36,8 @@ function publicCache(maxAgeSeconds = 300) {
 }
 
 export const listPublishedRegions = createServerFn({ method: "GET" }).handler(async () => {
+  publicCache(600);
   const { data, error } = await pub()
-    publicCache();
     .from("regions")
     .select("id, slug, name, tagline, description, cover_image_url, coordinates")
     .eq("is_published", true)
