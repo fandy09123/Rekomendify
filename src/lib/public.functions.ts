@@ -1,4 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
+import { setResponseHeader } from "@tanstack/react-start/server";
 import { createClient } from "@supabase/supabase-js";
 import { z } from "zod";
 import type { Database } from "@/integrations/supabase/types";
@@ -11,8 +12,32 @@ function pub() {
   });
 }
 
+/**
+ * Cache CDN untuk data publik.
+ *
+ * Seluruh data di fungsi-fungsi ini bersifat publik (hanya baris yang sudah
+ * `is_published`) dan identik untuk setiap pengunjung, sehingga aman disimpan
+ * di shared cache. Ini memutus rantai "satu kunjungan/crawler = beberapa query
+ * Postgres + satu invocation" yang menjadi penyumbang biaya terbesar:
+ * permintaan berikutnya dilayani dari edge tanpa menyentuh database.
+ *
+ * `stale-while-revalidate` menjaga halaman tetap terasa hidup — konten basi
+ * hanya tersaji sesaat sementara versi baru diambil di latar belakang.
+ */
+function publicCache(maxAgeSeconds = 300) {
+  try {
+    setResponseHeader(
+      "cache-control",
+      `public, max-age=0, s-maxage=${maxAgeSeconds}, stale-while-revalidate=86400`,
+    );
+  } catch {
+    // Di luar konteks request (mis. saat prerender) header tidak tersedia.
+  }
+}
+
 export const listPublishedRegions = createServerFn({ method: "GET" }).handler(async () => {
   const { data, error } = await pub()
+    publicCache();
     .from("regions")
     .select("id, slug, name, tagline, description, cover_image_url, coordinates")
     .eq("is_published", true)
@@ -25,6 +50,7 @@ export const listPublishedRegions = createServerFn({ method: "GET" }).handler(as
 export const getRegionContact = createServerFn({ method: "GET" })
   .validator((data: any) => z.object({ slug: z.string().min(1) }).parse(data))
   .handler(async ({ data }) => {
+    publicCache(600);
     const { data: region } = await pub()
       .from("regions")
       .select("id, slug, name, admin_whatsapp")
@@ -46,6 +72,7 @@ const CATEGORY_COLUMNS = "id, region_id, slug, name, icon, color, sort_order";
 export const getRegionBySlug = createServerFn({ method: "GET" })
   .validator((data: any) => z.object({ slug: z.string().min(1) }).parse(data))
   .handler(async ({ data }) => {
+    publicCache(300);
     const sb = pub();
     const { data: region, error } = await sb
       .from("regions")
@@ -72,6 +99,7 @@ export const getRegionBySlug = createServerFn({ method: "GET" })
 export const getLocationBySlug = createServerFn({ method: "GET" })
   .validator((data: any) => z.object({ regionSlug: z.string(), locationSlug: z.string() }).parse(data))
   .handler(async ({ data }) => {
+    publicCache(300);
     const sb = pub();
     const { data: region } = await sb.from("regions").select("id, slug, name, admin_whatsapp").eq("slug", data.regionSlug).eq("is_published", true).maybeSingle();
     if (!region) return null;
@@ -184,6 +212,7 @@ export const recordEngagement = createServerFn({ method: "POST" })
 export const listRegionInfoPosts = createServerFn({ method: "GET" })
   .validator((data: any) => z.object({ regionSlug: z.string().min(1) }).parse(data))
   .handler(async ({ data }) => {
+    publicCache(300);
     const sb = pub();
     const { data: region } = await sb
       .from("regions")
@@ -212,6 +241,7 @@ export const listRegionInfoPosts = createServerFn({ method: "GET" })
 export const listRegionAds = createServerFn({ method: "GET" })
   .validator((data: any) => z.object({ regionSlug: z.string().min(1) }).parse(data))
   .handler(async ({ data }) => {
+    publicCache(120);
     const sb = pub();
     const { data: region } = await sb
       .from("regions").select("id").eq("slug", data.regionSlug).eq("is_published", true).maybeSingle();
@@ -235,6 +265,7 @@ export const listRegionAds = createServerFn({ method: "GET" })
 export const listContextualAds = createServerFn({ method: "GET" })
   .validator((data: any) => z.object({ hostLocationId: z.string().uuid() }).parse(data))
   .handler(async ({ data }) => {
+    publicCache(120);
     const { data: ads, error } = await pub()
       .from("ads")
       .select("id, title, description, image_url, location_id, locations!ads_location_id_fkey(id, slug, name, photo_url, price_range)")
