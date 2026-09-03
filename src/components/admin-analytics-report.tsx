@@ -21,14 +21,17 @@ type Summary = {
   content?: { locations: number; published_locations: number; categories: number; info_posts: number };
 };
 
-function AnalyticsPage() {
-  const [days, setDays] = useState<number>(30);
+export default function AnalyticsReport({ days }: { days: number }) {
   const { data, isLoading } = useQuery<Summary>({
     queryKey: ["admin-analytics", days],
     queryFn: () => myAnalytics({ data: { days } }),
+    // Statistik jarang berubah dalam hitungan menit; hindari refetch berulang
+    // saat admin bolak-balik antar tab/rentang.
+    staleTime: 5 * 60_000,
+    gcTime: 30 * 60_000,
   });
 
-  if (isLoading) return <p className="text-sm text-muted-foreground">Memuat data…</p>;
+  if (isLoading) return <ReportSkeleton />;
   if (!data?.region_id) {
     return <p className="rounded-2xl border border-dashed border-border p-8 text-center text-sm text-muted-foreground">Akun Anda belum terhubung ke wilayah aktif.</p>;
   }
@@ -46,28 +49,9 @@ function AnalyticsPage() {
   const conversion = rangeVisits > 0 ? Math.round(((eng.whatsapp + eng.gmaps) / rangeVisits) * 100) : 0;
 
   return (
-    <div className="mx-auto max-w-5xl pb-24">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <h1 className="font-display text-3xl">Analytics</h1>
-          <p className="max-w-xl text-sm text-muted-foreground">
-            Angka nyata dari wilayah Anda, dihitung langsung di database. Kunjungan mengikuti lokasi & penempatan QR — memindah QR tidak mencampur data.
-          </p>
-        </div>
-        <div className="flex gap-1 rounded-full border border-border bg-card p-1">
-          {RANGES.map((r) => (
-            <button
-              key={r}
-              onClick={() => setDays(r)}
-              className={`rounded-full px-3 py-1.5 text-xs font-semibold transition ${days === r ? "bg-foreground text-background" : "hover:bg-muted"}`}
-            >
-              {r} hari
-            </button>
-          ))}
-        </div>
-      </div>
-
+    <div>
       <div className="mt-6 grid gap-3 sm:grid-cols-4">
+
         <Stat label="Hari ini" value={totals.today} delta={delta(totals.today, totals.yesterday)} deltaLabel="vs kemarin" />
         <Stat label="7 hari" value={totals.d7} delta={delta(totals.d7, totals.prev7)} deltaLabel="vs 7 hari sebelumnya" />
         <Stat label="30 hari" value={totals.d30} delta={delta(totals.d30, totals.prev30)} deltaLabel="vs 30 hari sebelumnya" />
