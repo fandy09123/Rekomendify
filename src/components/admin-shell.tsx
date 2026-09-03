@@ -8,14 +8,24 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
   const navigate = useNavigate();
   const qc = useQueryClient();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
-  const { data: profile } = useQuery({ queryKey: ["my-profile"], queryFn: () => myProfile() });
-  // Satu cache key kanonik ("my-region") bersama halaman admin lain, sehingga
-  // myRegion tidak dipanggil dua kali (shell + halaman) untuk data yang sama.
+  // Satu sumber data untuk shell: myRegion sudah mengembalikan profil
+  // (is_active + region_id), jadi query "my-profile" terpisah tidak lagi
+  // dijalankan pada setiap halaman admin. Query key kanonik "my-region"
+  // dipakai bersama halaman admin lain sehingga hanya satu request.
   const { data: my } = useQuery({
     queryKey: ["my-region"],
     queryFn: () => myRegion(),
-    enabled: !!profile?.is_active,
+    staleTime: 60_000,
   });
+  const profile = my?.profile;
+  // Email hanya dibutuhkan pada layar "akun belum aktif" (kasus jarang),
+  // jadi diambil belakangan dan hanya saat memang ditampilkan.
+  const { data: fullProfile } = useQuery({
+    queryKey: ["my-profile"],
+    queryFn: () => myProfile(),
+    enabled: profile != null && !profile.is_active,
+  });
+
   const region = my?.region;
 
   const items = [
@@ -45,7 +55,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
           <h1 className="mt-4 font-display text-2xl">Akun belum aktif</h1>
           <p className="mt-2 text-sm text-muted-foreground">
             Pendaftaran Anda sudah kami terima. Tim Rekomendify akan memverifikasi & mengaktifkan akun
-            <span className="font-semibold"> {profile.email}</span> secara manual. Anda akan diberitahu setelah aktif.
+            <span className="font-semibold"> {fullProfile?.email ?? ""}</span> secara manual. Anda akan diberitahu setelah aktif.
           </p>
           <button onClick={logout} className="mt-6 inline-flex items-center gap-1.5 rounded-full border border-border px-4 py-2 text-sm font-medium">
             <LogOut className="size-4" /> Keluar
