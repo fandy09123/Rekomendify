@@ -6,14 +6,20 @@
  *   - API/Supabase/server function: network-only (tidak di-cache)
  */
 
-// v5: gambar publik Supabase Storage ikut di-cache (immutable, cacheControl 1 tahun).
-const CACHE_VERSION = "v5";
+// v6: halaman publik yang pernah dibuka ikut disimpan (network-first) supaya
+// tetap bisa ditampilkan saat offline, bukan sekadar layar "tanpa koneksi".
+const CACHE_VERSION = "v6";
 const STATIC_CACHE = `rekomendify-static-${CACHE_VERSION}`;
 const FONT_CACHE   = `rekomendify-fonts-${CACHE_VERSION}`;
 // Cache gambar dipertahankan lintas versi supaya update aplikasi tidak memaksa
 // perangkat mengunduh ulang seluruh foto (egress Supabase Storage).
 const IMAGE_CACHE  = "rekomendify-images-v1";
 const IMAGE_CACHE_LIMIT = 120;
+// Halaman HTML publik yang pernah dibuka (dipertahankan lintas versi aplikasi;
+// isinya selalu diperbarui dari jaringan ketika online).
+const PAGE_CACHE = "rekomendify-pages-v1";
+const PAGE_CACHE_LIMIT = 40;
+
 
 const STATIC_ASSETS = [
   "/",
