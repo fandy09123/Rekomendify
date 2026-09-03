@@ -12,11 +12,16 @@ export default defineConfig({
     // nitro/vite builds from this
     server: { entry: "server" },
   },
-  // Hard-pin Nitro to the Vercel preset for self-deployments. This is ignored
-  // inside the Lovable sandbox build (the wrapper forces cloudflare-module there),
-  // but on Vercel CI it makes the build emit `.vercel/output/` in the standard
-  // Build Output API v3 layout that Vercel auto-detects.
-  nitro: { preset: "vercel" },
+  // Dynamically select Nitro preset:
+  // - Vercel CI sets process.env.VERCEL=1 -> outputs .vercel/output
+  // - Cloudflare Pages sets process.env.CF_PAGES=1 -> outputs .output/public + _worker.js
+  // - Lovable sandbox forces cloudflare-module
+  // - NITRO_PRESET env var allows explicit overrides
+  nitro: {
+    preset:
+      process.env.NITRO_PRESET ||
+      (process.env.VERCEL ? "vercel" : "cloudflare-pages"),
+  },
   vite: {
     ssr: {
       noExternal: ["leaflet"],
