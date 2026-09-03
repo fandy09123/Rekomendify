@@ -1,12 +1,10 @@
-import { createFileRoute } from "@tanstack/react-router";
+// Laporan statistik admin — dimuat lewat dynamic import hanya ketika admin
+// menekan "Tampilkan statistik", sehingga query berat & bundle chart tidak
+// ikut pada initial render dashboard.
 import { useQuery } from "@tanstack/react-query";
-import { useState } from "react";
 import { myAnalytics } from "@/lib/admin.functions";
 import { MessageCircle, Navigation, Bookmark, Share2, TrendingUp, TrendingDown, Minus } from "lucide-react";
 
-export const Route = createFileRoute("/_authenticated/admin/analytics")({
-  component: AnalyticsPage,
-});
 
 const RANGES = [7, 14, 30, 90] as const;
 
