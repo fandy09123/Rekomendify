@@ -101,5 +101,8 @@
     "@tanstack/router-generator": {
       "zod": "4.4.3"
     }
+  },
+  "optionalDependencies": {
+    "@rolldown/binding-linux-x64-gnu": "^1.2.7"
   }
 }
