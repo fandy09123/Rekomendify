@@ -6,8 +6,6 @@ import { myAnalytics } from "@/lib/admin.functions";
 import { MessageCircle, Navigation, Bookmark, Share2, TrendingUp, TrendingDown, Minus } from "lucide-react";
 
 
-const RANGES = [7, 14, 30, 90] as const;
-
 type Summary = {
   region_id: string | null;
   days?: number;
@@ -168,6 +166,20 @@ function Stat({
         </p>
       )}
       {sub && <p className="mt-0.5 text-[11px] text-muted-foreground">{sub}</p>}
+    </div>
+  );
+}
+
+function ReportSkeleton() {
+  return (
+    <div className="mt-6 space-y-4" aria-busy="true">
+      <div className="grid gap-3 sm:grid-cols-4">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <div key={i} className="h-24 animate-pulse rounded-2xl border border-border bg-muted/40" />
+        ))}
+      </div>
+      <div className="h-48 animate-pulse rounded-2xl border border-border bg-muted/40" />
+      <div className="h-64 animate-pulse rounded-2xl border border-border bg-muted/40" />
     </div>
   );
 }
