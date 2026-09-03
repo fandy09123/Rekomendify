@@ -15,6 +15,8 @@ import { Toaster } from "@/components/ui/sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { PwaInstallBanner } from "@/components/pwa-install-banner";
 import { OnboardingGate } from "@/components/onboarding-gate";
+import { OfflineBanner } from "@/components/offline-banner";
+
 
 function NotFoundComponent() {
   return (
