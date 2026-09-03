@@ -23,7 +23,7 @@ import {
   recordEngagement,
   listContextualAds,
 } from "@/lib/public.functions";
-import { shouldRecordVisit } from "@/lib/visit-tracking";
+import { shouldRecordVisit, shouldRecordEngagement } from "@/lib/visit-tracking";
 import { ContextualAdCard } from "@/components/ads";
 import { mapsDirUrl, waChatUrl } from "@/lib/geo";
 import { motion, AnimatePresence } from "framer-motion";
@@ -144,7 +144,11 @@ function LocationPage() {
     return bFeat - aFeat;
   });
 
+  // Dedupe 5 menit per (lokasi, jenis aksi): klik beruntun pada CTA yang sama
+  // tidak menghasilkan INSERT engagement_events berulang. Perilaku tombol
+  // (buka WhatsApp/Maps/simpan/bagikan) tidak berubah.
   const track = (kind: "whatsapp" | "gmaps" | "save" | "share") => {
+    if (!shouldRecordEngagement(`${location.id}:${kind}`)) return;
     recordEngagement({ data: { regionId: region.id, locationId: location.id, kind } }).catch(
       () => {},
     );

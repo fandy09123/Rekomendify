@@ -25,11 +25,21 @@ export const myRegion = createServerFn({ method: "GET" })
     const { data: profile } = await sb
       .from("profiles").select("region_id, is_active").eq("id", context.userId).maybeSingle();
     if (!profile?.region_id) return { profile, region: null, categories: [], locations: [], couriers: [] };
+    // Projection eksplisit: semua kolom bisnis dibutuhkan oleh form edit admin,
+    // hanya kolom audit (created_at/updated_at) yang tidak pernah dipakai UI.
     const [{ data: region }, { data: cats }, { data: locs }, { data: couriers }] = await Promise.all([
-      sb.from("regions").select("*").eq("id", profile.region_id).maybeSingle(),
-      sb.from("categories").select("*").eq("region_id", profile.region_id).order("sort_order"),
-      sb.from("locations").select("*").eq("region_id", profile.region_id).order("sort_order"),
-      sb.from("couriers").select("*").eq("region_id", profile.region_id).order("sort_order"),
+      sb.from("regions")
+        .select("id, name, slug, tagline, description, welcome_message, mascot_name, cover_image_url, admin_whatsapp, coordinates, is_published")
+        .eq("id", profile.region_id).maybeSingle(),
+      sb.from("categories")
+        .select("id, region_id, name, slug, icon, color, is_system, sort_order")
+        .eq("region_id", profile.region_id).order("sort_order"),
+      sb.from("locations")
+        .select("id, region_id, category_id, name, slug, description, photo_url, gallery_urls, youtube_url, whatsapp, hours, price_range, coordinates, is_featured, is_published, sort_order")
+        .eq("region_id", profile.region_id).order("sort_order"),
+      sb.from("couriers")
+        .select("id, region_id, name, whatsapp, coordinates, is_active, sort_order")
+        .eq("region_id", profile.region_id).order("sort_order"),
     ]);
     return { profile, region, categories: cats ?? [], locations: locs ?? [], couriers: couriers ?? [] };
   });

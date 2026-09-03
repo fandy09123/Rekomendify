@@ -108,9 +108,11 @@ function RootComponent() {
   const router = useRouter();
 
   // Registrasi Service Worker untuk PWA + Web Push.
-  // `updateViaCache: "none"` mencegah browser memakai sw.js lama dari HTTP cache,
-  // dan `update()` saat tab kembali aktif memastikan perangkat yang masih
-  // menjalankan worker versi lama (tanpa handler push) segera diperbarui.
+  // `updateViaCache: "none"` mencegah browser memakai sw.js lama dari HTTP cache.
+  // Browser sendiri sudah mengecek sw.js pada setiap navigasi (cold start PWA,
+  // reload, buka tab baru), jadi pemeriksaan manual hanya perlu untuk sesi yang
+  // dibiarkan terbuka lama: dipicu saat tab kembali aktif, dengan throttle 15 menit.
+  const SW_UPDATE_THROTTLE_MS = 15 * 60_000;
   useEffect(() => {
     if (typeof window === "undefined") return;
     if (!("serviceWorker" in navigator)) return;
@@ -133,7 +135,7 @@ function RootComponent() {
     const check = () => {
       if (!reg || document.visibilityState !== "visible") return;
       const now = Date.now();
-      if (now - last < 60_000) return; // hindari update loop
+      if (now - last < SW_UPDATE_THROTTLE_MS) return; // hindari update loop
       last = now;
       reg.update().catch(() => {});
     };
