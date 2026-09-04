@@ -157,18 +157,38 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // Navigasi HTML → network-first, fallback offline
+  // Navigasi HTML → network-first, simpan salinan, fallback ke halaman yang
+  // pernah dibuka, baru terakhir ke halaman offline generik.
+  // Halaman admin/auth tidak pernah disimpan (berisi data akun).
   if (request.mode === "navigate") {
+    const cacheable =
+      !url.pathname.startsWith("/admin") &&
+      !url.pathname.startsWith("/auth") &&
+      !url.pathname.startsWith("/reset-password");
     event.respondWith(
-      fetch(request).catch(
-        () =>
-          new Response(OFFLINE_HTML, {
+      (async () => {
+        try {
+          const resp = await fetch(request);
+          if (cacheable && resp.ok) {
+            const clone = resp.clone();
+            caches.open(PAGE_CACHE).then(async (cache) => {
+              await cache.put(request, clone);
+              await trimCache(cache, PAGE_CACHE_LIMIT);
+            });
+          }
+          return resp;
+        } catch {
+          const cached = await caches.match(request, { ignoreSearch: true });
+          if (cached) return cached;
+          return new Response(OFFLINE_HTML, {
             headers: { "Content-Type": "text/html; charset=utf-8" },
-          })
-      )
+          });
+        }
+      })(),
     );
     return;
   }
+
 
   // Aset statis (JS, CSS, images) → cache-first
   event.respondWith(
