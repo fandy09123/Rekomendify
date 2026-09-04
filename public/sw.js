@@ -50,7 +50,7 @@ const OFFLINE_HTML = `<!DOCTYPE html>
 <body>
   <div class="card">
     <h1>📶 Tanpa Koneksi</h1>
-    <p>Sepertinya Anda sedang offline. Hubungkan ke internet lalu coba lagi.</p>
+    <p>Halaman ini belum tersedia offline. Halaman yang pernah Anda buka tetap bisa diakses tanpa koneksi.</p>
     <button onclick="location.reload()">Coba Lagi</button>
   </div>
 </body>
@@ -115,7 +115,7 @@ self.addEventListener("fetch", (event) => {
         if (cached) return cached;
         const resp = await fetch(request);
         if (resp.ok) {
-          cache.put(request, resp.clone()).then(() => trimImageCache(cache));
+          cache.put(request, resp.clone()).then(() => trimCache(cache, IMAGE_CACHE_LIMIT));
         }
         return resp;
       })
@@ -206,12 +206,12 @@ self.addEventListener("fetch", (event) => {
   );
 });
 
-/** Menjaga cache gambar tetap terbatas (FIFO sederhana). */
-async function trimImageCache(cache) {
+/** Menjaga cache tetap terbatas (FIFO sederhana). */
+async function trimCache(cache, limit) {
   try {
     const keys = await cache.keys();
-    if (keys.length <= IMAGE_CACHE_LIMIT) return;
-    for (const req of keys.slice(0, keys.length - IMAGE_CACHE_LIMIT)) {
+    if (keys.length <= limit) return;
+    for (const req of keys.slice(0, keys.length - limit)) {
       await cache.delete(req);
     }
   } catch {
