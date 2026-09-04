@@ -6,10 +6,20 @@
  *   - API/Supabase/server function: network-only (tidak di-cache)
  */
 
-// v4: showNotification() dipanggil sebelum penulisan inbox pada handler push.
-const CACHE_VERSION = "v4";
+// v6: halaman publik yang pernah dibuka ikut disimpan (network-first) supaya
+// tetap bisa ditampilkan saat offline, bukan sekadar layar "tanpa koneksi".
+const CACHE_VERSION = "v6";
 const STATIC_CACHE = `rekomendify-static-${CACHE_VERSION}`;
 const FONT_CACHE   = `rekomendify-fonts-${CACHE_VERSION}`;
+// Cache gambar dipertahankan lintas versi supaya update aplikasi tidak memaksa
+// perangkat mengunduh ulang seluruh foto (egress Supabase Storage).
+const IMAGE_CACHE  = "rekomendify-images-v1";
+const IMAGE_CACHE_LIMIT = 120;
+// Halaman HTML publik yang pernah dibuka (dipertahankan lintas versi aplikasi;
+// isinya selalu diperbarui dari jaringan ketika online).
+const PAGE_CACHE = "rekomendify-pages-v1";
+const PAGE_CACHE_LIMIT = 40;
+
 
 const STATIC_ASSETS = [
   "/",
@@ -40,7 +50,7 @@ const OFFLINE_HTML = `<!DOCTYPE html>
 <body>
   <div class="card">
     <h1>📶 Tanpa Koneksi</h1>
-    <p>Sepertinya Anda sedang offline. Hubungkan ke internet lalu coba lagi.</p>
+    <p>Halaman ini belum tersedia offline. Halaman yang pernah Anda buka tetap bisa diakses tanpa koneksi.</p>
     <button onclick="location.reload()">Coba Lagi</button>
   </div>
 </body>
@@ -72,7 +82,7 @@ self.addEventListener("activate", (event) => {
     caches.keys().then((keys) =>
       Promise.all(
         keys
-          .filter((k) => k !== STATIC_CACHE && k !== FONT_CACHE)
+          .filter((k) => k !== STATIC_CACHE && k !== FONT_CACHE && k !== IMAGE_CACHE && k !== PAGE_CACHE)
           .map((k) => caches.delete(k))
       )
     )
@@ -91,6 +101,27 @@ self.addEventListener("fetch", (event) => {
 
   // Lewati request non-GET dan request ke origin lain selain Google Fonts
   if (request.method !== "GET") return;
+
+  // Gambar publik Supabase Storage → cache-first.
+  // Objek diunggah dengan key unik + cacheControl 1 tahun (upsert: false),
+  // jadi URL bersifat immutable dan aman disimpan permanen di perangkat.
+  if (
+    url.hostname.includes("supabase.co") &&
+    url.pathname.startsWith("/storage/v1/object/public/")
+  ) {
+    event.respondWith(
+      caches.open(IMAGE_CACHE).then(async (cache) => {
+        const cached = await cache.match(request);
+        if (cached) return cached;
+        const resp = await fetch(request);
+        if (resp.ok) {
+          cache.put(request, resp.clone()).then(() => trimCache(cache, IMAGE_CACHE_LIMIT));
+        }
+        return resp;
+      })
+    );
+    return;
+  }
 
   // API Supabase dan TanStack server function → network-only, jangan cache.
   // Server function menggunakan endpoint /_serverFn/* (bukan /_server/*) dan
@@ -126,18 +157,38 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // Navigasi HTML → network-first, fallback offline
+  // Navigasi HTML → network-first, simpan salinan, fallback ke halaman yang
+  // pernah dibuka, baru terakhir ke halaman offline generik.
+  // Halaman admin/auth tidak pernah disimpan (berisi data akun).
   if (request.mode === "navigate") {
+    const cacheable =
+      !url.pathname.startsWith("/admin") &&
+      !url.pathname.startsWith("/auth") &&
+      !url.pathname.startsWith("/reset-password");
     event.respondWith(
-      fetch(request).catch(
-        () =>
-          new Response(OFFLINE_HTML, {
+      (async () => {
+        try {
+          const resp = await fetch(request);
+          if (cacheable && resp.ok) {
+            const clone = resp.clone();
+            caches.open(PAGE_CACHE).then(async (cache) => {
+              await cache.put(request, clone);
+              await trimCache(cache, PAGE_CACHE_LIMIT);
+            });
+          }
+          return resp;
+        } catch {
+          const cached = await caches.match(request, { ignoreSearch: true });
+          if (cached) return cached;
+          return new Response(OFFLINE_HTML, {
             headers: { "Content-Type": "text/html; charset=utf-8" },
-          })
-      )
+          });
+        }
+      })(),
     );
     return;
   }
+
 
   // Aset statis (JS, CSS, images) → cache-first
   event.respondWith(
@@ -154,6 +205,19 @@ self.addEventListener("fetch", (event) => {
     )
   );
 });
+
+/** Menjaga cache tetap terbatas (FIFO sederhana). */
+async function trimCache(cache, limit) {
+  try {
+    const keys = await cache.keys();
+    if (keys.length <= limit) return;
+    for (const req of keys.slice(0, keys.length - limit)) {
+      await cache.delete(req);
+    }
+  } catch {
+    /* abaikan */
+  }
+}
 
 // ── Inbox notifikasi lokal (IndexedDB) ───────────────────────────────────────
 // Ditulis dari dalam Service Worker supaya riwayat tetap terisi walau tidak ada

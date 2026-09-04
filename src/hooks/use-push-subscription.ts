@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
-  getPushConfig,
   syncPushSubscription,
   setRegionFollow,
   deactivatePushSubscription,
@@ -124,6 +123,52 @@ function mapPushError(e: any): string {
   return msg || "Gagal mengaktifkan notifikasi push.";
 }
 
+/**
+ * Cache sinkronisasi langganan pada perangkat.
+ *
+ * Tanpa ini, setiap mount halaman ber-tombol notifikasi memanggil
+ * `syncPushSubscription` (satu invocation + satu UPSERT) meski tidak ada
+ * yang berubah. Sinkronisasi tetap dijalankan ulang secara berkala agar
+ * `last_seen_at` dan daftar wilayah tidak basi.
+ */
+const SYNC_CACHE_KEY = "rekomendify.push-sync.v1";
+const SYNC_TTL_MS = 24 * 60 * 60 * 1000;
+
+function readSyncCache(endpoint: string): string[] | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = window.localStorage.getItem(SYNC_CACHE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as { endpoint: string; at: number; slugs: string[] };
+    if (parsed.endpoint !== endpoint) return null;
+    if (Date.now() - parsed.at >= SYNC_TTL_MS) return null;
+    return Array.isArray(parsed.slugs) ? parsed.slugs : null;
+  } catch {
+    return null;
+  }
+}
+
+function writeSyncCache(endpoint: string, slugs: string[]) {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(
+      SYNC_CACHE_KEY,
+      JSON.stringify({ endpoint, at: Date.now(), slugs }),
+    );
+  } catch {
+    /* abaikan */
+  }
+}
+
+function clearSyncCache() {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.removeItem(SYNC_CACHE_KEY);
+  } catch {
+    /* abaikan */
+  }
+}
+
 export function usePushSubscription(): PushState {
   const [supported, setSupported] = useState(false);
   const [configured, setConfigured] = useState(false);
@@ -152,11 +197,10 @@ export function usePushSubscription(): PushState {
       setPermission(Notification.permission);
 
       try {
-        const cfg = await getPushConfig();
-        if (!alive) return;
-        publicKeyRef.current = cfg.publicKey ?? DEFAULT_VAPID_PUBLIC_KEY;
+        // Public key sudah ada di bundle (aman & memang untuk browser), jadi
+        // tidak perlu satu server function call di setiap mount halaman.
+        publicKeyRef.current = DEFAULT_VAPID_PUBLIC_KEY;
         setConfigured(Boolean(publicKeyRef.current));
-
 
         const reg = await getSwRegistrationWithTimeout(2500);
         if (reg) {
@@ -164,8 +208,17 @@ export function usePushSubscription(): PushState {
           if (!alive) return;
           if (existing && Notification.permission === "granted") {
             setSubscribed(true);
-            const res = await syncPushSubscription({ data: toPayload(existing) });
-            if (alive) setRegionSlugs(res.regionSlugs ?? []);
+            const cached = readSyncCache(existing.endpoint);
+            if (cached) {
+              // Langganan tidak berubah dan baru saja disinkronkan — cukup pakai
+              // daftar wilayah dari cache perangkat, tanpa write ke database.
+              if (alive) setRegionSlugs(cached);
+            } else {
+              const res = await syncPushSubscription({ data: toPayload(existing) });
+              if (!alive) return;
+              setRegionSlugs(res.regionSlugs ?? []);
+              writeSyncCache(existing.endpoint, res.regionSlugs ?? []);
+            }
           }
         }
       } catch {
@@ -235,6 +288,7 @@ export function usePushSubscription(): PushState {
       const payload = await ensureSubscription();
       const res = await syncPushSubscription({ data: payload });
       setRegionSlugs(res.regionSlugs ?? []);
+      writeSyncCache(payload.endpoint, res.regionSlugs ?? []);
       return true;
     } catch (e: any) {
       setError(mapPushError(e));
@@ -252,6 +306,7 @@ export function usePushSubscription(): PushState {
         const payload = await ensureSubscription();
         const res = await setRegionFollow({ data: { ...payload, regionSlug: slug, follow } });
         setRegionSlugs(res.regionSlugs ?? []);
+        writeSyncCache(payload.endpoint, res.regionSlugs ?? []);
         return true;
       } catch (e: any) {
         setError(mapPushError(e));
@@ -275,6 +330,7 @@ export function usePushSubscription(): PushState {
       }
       setSubscribed(false);
       setRegionSlugs([]);
+      clearSyncCache();
     } catch (e: any) {
       setError(e?.message ?? "Gagal menonaktifkan notifikasi.");
     } finally {

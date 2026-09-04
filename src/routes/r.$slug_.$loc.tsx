@@ -21,9 +21,9 @@ import {
   getLocationBySlug,
   recordVisit,
   recordEngagement,
-  getRegionContact,
   listContextualAds,
 } from "@/lib/public.functions";
+import { shouldRecordVisit, shouldRecordEngagement } from "@/lib/visit-tracking";
 import { ContextualAdCard } from "@/components/ads";
 import { mapsDirUrl, waChatUrl } from "@/lib/geo";
 import { motion, AnimatePresence } from "framer-motion";
@@ -94,11 +94,6 @@ function LocationPage() {
   });
   const [confirm, setConfirm] = useState<ConfirmKind>(null);
   const [saved, setSaved] = useState(false);
-  const { data: regionContact } = useQuery({
-    queryKey: ["region-contact", slug],
-    queryFn: () => getRegionContact({ data: { slug } }),
-  });
-
   const { data: contextualAds } = useQuery({
     queryKey: ["contextual-ads", data?.location?.id],
     queryFn: () => listContextualAds({ data: { hostLocationId: data!.location.id } }),
@@ -108,9 +103,11 @@ function LocationPage() {
   useEffect(() => {
     if (!data?.location) return;
     setSaved(isSaved(data.location.id));
-    recordVisit({
-      data: { regionId: data.region.id, locationId: data.location.id, source: "direct" },
-    }).catch(() => {});
+    if (shouldRecordVisit(`location:${data.location.id}`)) {
+      recordVisit({
+        data: { regionId: data.region.id, locationId: data.location.id, source: "direct" },
+      }).catch(() => {});
+    }
   }, [data?.location?.id]);
 
   if (!data) return null;
@@ -125,7 +122,7 @@ function LocationPage() {
   const activeCouriers = (couriers as any[]).filter((c) => c?.whatsapp);
   const canContact = Boolean(ownerWaUrl) || activeCouriers.length > 0;
   const regionAdminWaUrl = waChatUrl(
-    regionContact?.admin_whatsapp,
+    (region as any).admin_whatsapp,
     `Halo Admin ${region.name}, saya ingin bertanya/melaporkan tentang ${location.name} di Rekomendify.`,
   );
   const parentHref = getSafeInternalHref(from);
@@ -147,7 +144,11 @@ function LocationPage() {
     return bFeat - aFeat;
   });
 
+  // Dedupe 5 menit per (lokasi, jenis aksi): klik beruntun pada CTA yang sama
+  // tidak menghasilkan INSERT engagement_events berulang. Perilaku tombol
+  // (buka WhatsApp/Maps/simpan/bagikan) tidak berubah.
   const track = (kind: "whatsapp" | "gmaps" | "save" | "share") => {
+    if (!shouldRecordEngagement(`${location.id}:${kind}`)) return;
     recordEngagement({ data: { regionId: region.id, locationId: location.id, kind } }).catch(
       () => {},
     );

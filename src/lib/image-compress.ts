@@ -17,7 +17,9 @@ export type CompressResult = {
   bytes: number;
 };
 
-const MAX_DIMENSION = 1600;
+// 1280px sudah lebih dari cukup untuk layar ponsel dan memangkas egress
+// Storage secara signifikan dibanding 1600px.
+const MAX_DIMENSION = 1280;
 const QUALITY = 0.82;
 /** Below this size a photo is already light enough; re-encoding gains little. */
 const SKIP_BELOW_BYTES = 120 * 1024;
