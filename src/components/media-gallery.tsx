@@ -137,7 +137,7 @@ export function MediaGallery({
             className="group relative size-full"
           >
             {current.poster && (
-              <img src={current.poster} alt={alt} className="size-full object-cover" />
+              <img src={current.poster} alt={alt} decoding="async" className="size-full object-cover" />
             )}
             <span className="absolute inset-0 grid place-items-center bg-black/30">
               <span className="grid size-16 place-items-center rounded-full bg-white/95 text-primary shadow-lift transition group-hover:scale-105">
@@ -164,6 +164,8 @@ export function MediaGallery({
                 <img
                   src={s.kind === "image" ? s.src : (s.poster ?? "")}
                   alt=""
+                  loading="lazy"
+                  decoding="async"
                   className="size-full object-cover"
                 />
                 {s.kind === "video" && (

@@ -182,7 +182,7 @@ function LocationsTab({ categories, locations, regionSlug, onChanged }: { catego
         {filtered.map((l) => (
           <div key={l.id} className="flex items-center gap-3 rounded-xl border border-border bg-card p-3">
             <div className="size-12 shrink-0 overflow-hidden rounded-lg bg-muted">
-              {l.photo_url ? <img src={l.photo_url} alt="" className="size-full object-cover" /> : <div className="grid size-full place-items-center text-muted-foreground"><MapPin className="size-5" /></div>}
+              {l.photo_url ? <img src={l.photo_url} alt="" loading="lazy" decoding="async" className="size-full object-cover" /> : <div className="grid size-full place-items-center text-muted-foreground"><MapPin className="size-5" /></div>}
             </div>
             <div className="min-w-0 flex-1">
               <p className="truncate font-medium">{l.name}</p>

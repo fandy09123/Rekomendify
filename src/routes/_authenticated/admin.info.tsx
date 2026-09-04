@@ -45,7 +45,7 @@ function AdminInfoPage() {
         {list.map((p: any) => (
           <div key={p.id} className="flex items-start gap-3 rounded-xl border border-border bg-card p-3">
             <div className="size-14 shrink-0 overflow-hidden rounded-lg bg-muted">
-              {p.cover_image_url ? <img src={p.cover_image_url} alt="" className="size-full object-cover" /> : <div className="grid size-full place-items-center text-muted-foreground"><Megaphone className="size-5" /></div>}
+              {p.cover_image_url ? <img src={p.cover_image_url} alt="" loading="lazy" decoding="async" className="size-full object-cover" /> : <div className="grid size-full place-items-center text-muted-foreground"><Megaphone className="size-5" /></div>}
             </div>
             <div className="min-w-0 flex-1">
               <p className="truncate font-medium">{p.title}</p>

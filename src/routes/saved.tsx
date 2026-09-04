@@ -81,6 +81,7 @@ function SavedPage() {
                       src={l.photo_url}
                       alt={l.name}
                       loading="lazy"
+                      decoding="async"
                       className="size-full object-cover"
                     />
                   ) : (
