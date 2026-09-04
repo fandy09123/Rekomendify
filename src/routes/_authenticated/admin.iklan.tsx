@@ -77,7 +77,7 @@ function AdminAdsPage() {
           return (
             <div key={ad.id} className="flex items-start gap-3 rounded-xl border border-border bg-card p-3">
               <div className="size-14 shrink-0 overflow-hidden rounded-lg bg-muted">
-                {ad.image_url ? <img src={ad.image_url} alt="" className="size-full object-cover" /> : <div className="grid size-full place-items-center text-muted-foreground"><Megaphone className="size-5" /></div>}
+                {ad.image_url ? <img src={ad.image_url} alt="" loading="lazy" decoding="async" className="size-full object-cover" /> : <div className="grid size-full place-items-center text-muted-foreground"><Megaphone className="size-5" /></div>}
               </div>
               <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-center gap-2">
