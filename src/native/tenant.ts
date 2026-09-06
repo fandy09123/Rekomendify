@@ -1,16 +1,17 @@
 /**
- * SINGLE SOURCE OF TRUTH untuk App Shell.
+ * SINGLE SOURCE OF TRUTH tenant untuk frontend.
  *
- * Nilai tenant (nama desa & TARGET_URL) berasal dari `tenant.config.json`
+ * Nilai tenant (nama desa, slug, TARGET_URL) berasal dari `tenant.config.json`
  * dan disalin ke `src/tenant.generated.ts` oleh `npm run sync-tenant`.
  * Jangan mengedit nilai tenant di file ini — ubah tenant.config.json lalu sync.
  *
- * Tidak ada form, settings, localStorage, atau query parameter yang boleh
- * mengubah TARGET_URL dari sisi user.
+ * TARGET_URL / TARGET_ORIGIN TIDAK lagi dipakai sebagai sumber UI (tidak ada
+ * lagi redirect ke website). Di APK, origin ini hanya dipakai sebagai
+ * API origin untuk memanggil server function website.
  *
  * Nilai di sini bersifat PUBLIC. Jangan pernah menaruh secret/API key di sini.
  */
-import { TENANT } from "./tenant.generated";
+import { TENANT } from "../tenant.generated";
 
 export const APP_CONFIG = {
   TARGET_URL: TENANT.TARGET_URL,
@@ -19,5 +20,11 @@ export const APP_CONFIG = {
   APP_NAME: TENANT.APP_NAME,
 } as const;
 
-/** Origin dari TARGET_URL, dipakai untuk connectivity probe & allowlist. */
+/** Origin dari TARGET_URL: API origin saat aplikasi berjalan sebagai APK. */
 export const TARGET_ORIGIN = new URL(APP_CONFIG.TARGET_URL).origin;
+
+/** Path region default tenant (mis. "/r/desa-wisata-mulyosari"). */
+export const TENANT_PATH = new URL(APP_CONFIG.TARGET_URL).pathname.replace(/\/$/, "");
+
+/** Slug region tenant di dalam website (segmen terakhir TARGET_URL). */
+export const TENANT_REGION_SLUG = TENANT_PATH.split("/").filter(Boolean).pop() ?? "";
