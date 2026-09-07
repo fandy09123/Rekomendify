@@ -4,6 +4,8 @@ import { Upload, X, Loader2, ImagePlus, ArrowLeft, ArrowRight, Sparkles, Camera 
 import { stageImage, discardStaged, isStagedUrl, type StagedMeta } from "@/lib/upload-client";
 import { formatBytes } from "@/lib/image-compress";
 import { ImageCropper } from "@/components/image-cropper";
+import { hasNativeCamera, pickPhoto } from "@/native/camera";
+
 
 const ACCEPT = "image/png,image/jpeg,image/jpg,image/webp,image/gif";
 
