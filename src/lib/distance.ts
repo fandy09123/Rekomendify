@@ -1,5 +1,7 @@
 import { useCallback, useState } from "react";
 import { parseCoordinates } from "@/lib/geo";
+import { getCurrentPosition } from "@/native/location";
+
 
 export type LatLng = { lat: number; lng: number };
 
@@ -31,26 +33,27 @@ export function formatDistance(m: number): string {
 
 type GeoState = "idle" | "loading" | "granted" | "denied" | "unsupported";
 
-/** Geolokasi browser yang aman untuk SSR: hanya diakses saat handler dipanggil. */
+/**
+ * Lokasi pengguna, satu API untuk web dan APK.
+ * Web memakai geolocation browser; APK memakai plugin Geolocation Capacitor
+ * (izin Android diminta di dalam service, hanya saat handler ini dipanggil).
+ */
 export function useUserLocation() {
   const [position, setPosition] = useState<LatLng | null>(null);
   const [state, setState] = useState<GeoState>("idle");
 
   const request = useCallback(() => {
-    if (typeof navigator === "undefined" || !navigator.geolocation) {
-      setState("unsupported");
-      return;
-    }
     setState("loading");
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        setPosition({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+    void getCurrentPosition().then((result) => {
+      if (result.ok) {
+        setPosition(result.position);
         setState("granted");
-      },
-      () => setState("denied"),
-      { enableHighAccuracy: false, timeout: 10000, maximumAge: 300000 },
-    );
+        return;
+      }
+      setState(result.reason === "unavailable" ? "unsupported" : "denied");
+    });
   }, []);
+
 
   const clear = useCallback(() => {
     setPosition(null);

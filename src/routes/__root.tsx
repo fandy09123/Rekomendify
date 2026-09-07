@@ -16,6 +16,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { PwaInstallBanner } from "@/components/pwa-install-banner";
 import { OnboardingGate } from "@/components/onboarding-gate";
 import { OfflineBanner } from "@/components/offline-banner";
+import { shouldRegisterServiceWorker } from "@/native/capabilities";
+import { initNativeShell } from "@/native/shell";
+import { attachNativePushHandlers } from "@/native/notifications";
+
 
 
 function NotFoundComponent() {
@@ -116,8 +120,8 @@ function RootComponent() {
   // dibiarkan terbuka lama: dipicu saat tab kembali aktif, dengan throttle 15 menit.
   const SW_UPDATE_THROTTLE_MS = 15 * 60_000;
   useEffect(() => {
-    if (typeof window === "undefined") return;
-    if (!("serviceWorker" in navigator)) return;
+    if (!shouldRegisterServiceWorker()) return; // APK sudah membawa aset lokal
+
 
     let reg: ServiceWorkerRegistration | null = null;
     let last = 0;
@@ -157,6 +161,28 @@ function RootComponent() {
     };
   }, []);
 
+  // UX native: status bar, splash, keyboard, tombol Back Android.
+  // Tidak ada permintaan izin dan tidak ada request jaringan di sini.
+  useEffect(() => {
+    return initNativeShell({
+      canGoBack: () => router.history.canGoBack(),
+      goBack: () => router.history.back(),
+    });
+  }, [router]);
+
+  // Tap notifikasi native → navigasi di dalam aplikasi (bukan browser).
+  useEffect(() => {
+    let detach: (() => void) | undefined;
+    let cancelled = false;
+    void attachNativePushHandlers((path) => {
+      void router.navigate({ href: path });
+    }).then((off) => (cancelled ? off() : (detach = off)));
+    return () => {
+      cancelled = true;
+      detach?.();
+    };
+  }, [router]);
+
   useEffect(() => {
     const { data: sub } = supabase.auth.onAuthStateChange((event) => {
       if (event !== "SIGNED_IN" && event !== "SIGNED_OUT" && event !== "USER_UPDATED") return;
@@ -173,6 +199,7 @@ function RootComponent() {
       <PwaInstallBanner />
       <OnboardingGate />
       <OfflineBanner />
+
 
     </QueryClientProvider>
   );
