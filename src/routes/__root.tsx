@@ -16,6 +16,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { PwaInstallBanner } from "@/components/pwa-install-banner";
 import { OnboardingGate } from "@/components/onboarding-gate";
 import { OfflineBanner } from "@/components/offline-banner";
+import { isNativeApp, shouldRegisterServiceWorker } from "@/native/capabilities";
+import { initNativeShell } from "@/native/shell";
+import { attachNativePushHandlers } from "@/native/notifications";
+
 
 
 function NotFoundComponent() {
@@ -116,8 +120,8 @@ function RootComponent() {
   // dibiarkan terbuka lama: dipicu saat tab kembali aktif, dengan throttle 15 menit.
   const SW_UPDATE_THROTTLE_MS = 15 * 60_000;
   useEffect(() => {
-    if (typeof window === "undefined") return;
-    if (!("serviceWorker" in navigator)) return;
+    if (!shouldRegisterServiceWorker()) return; // APK sudah membawa aset lokal
+
 
     let reg: ServiceWorkerRegistration | null = null;
     let last = 0;
