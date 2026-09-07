@@ -16,7 +16,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { PwaInstallBanner } from "@/components/pwa-install-banner";
 import { OnboardingGate } from "@/components/onboarding-gate";
 import { OfflineBanner } from "@/components/offline-banner";
-import { isNativeApp, shouldRegisterServiceWorker } from "@/native/capabilities";
+import { shouldRegisterServiceWorker } from "@/native/capabilities";
 import { initNativeShell } from "@/native/shell";
 import { attachNativePushHandlers } from "@/native/notifications";
 
