@@ -161,6 +161,28 @@ function RootComponent() {
     };
   }, []);
 
+  // UX native: status bar, splash, keyboard, tombol Back Android.
+  // Tidak ada permintaan izin dan tidak ada request jaringan di sini.
+  useEffect(() => {
+    return initNativeShell({
+      canGoBack: () => router.history.canGoBack(),
+      goBack: () => router.history.back(),
+    });
+  }, [router]);
+
+  // Tap notifikasi native → navigasi di dalam aplikasi (bukan browser).
+  useEffect(() => {
+    let detach: (() => void) | undefined;
+    let cancelled = false;
+    void attachNativePushHandlers((path) => {
+      void router.navigate({ href: path });
+    }).then((off) => (cancelled ? off() : (detach = off)));
+    return () => {
+      cancelled = true;
+      detach?.();
+    };
+  }, [router]);
+
   useEffect(() => {
     const { data: sub } = supabase.auth.onAuthStateChange((event) => {
       if (event !== "SIGNED_IN" && event !== "SIGNED_OUT" && event !== "USER_UPDATED") return;
@@ -174,9 +196,10 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <Outlet />
       <Toaster />
-      <PwaInstallBanner />
+      {!isNativeApp() && <PwaInstallBanner />}
       <OnboardingGate />
       <OfflineBanner />
+
 
     </QueryClientProvider>
   );
