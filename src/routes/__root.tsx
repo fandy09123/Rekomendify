@@ -196,7 +196,7 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <Outlet />
       <Toaster />
-      {!isNativeApp() && <PwaInstallBanner />}
+      <PwaInstallBanner />
       <OnboardingGate />
       <OfflineBanner />
 
