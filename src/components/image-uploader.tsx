@@ -47,6 +47,30 @@ export function ImageUploader({
     setPending(files[0]);
   }, []);
 
+  /**
+   * Ambil foto: di aplikasi Android memakai kamera native (plugin Capacitor),
+   * di browser tetap memakai input file dengan `capture`. Izin hanya diminta
+   * saat tombol ini ditekan.
+   */
+  const takePhoto = useCallback(async () => {
+    if (!hasNativeCamera()) {
+      cameraRef.current?.click();
+      return;
+    }
+    const result = await pickPhoto("camera");
+    if (result.ok) {
+      setPending(result.file);
+      return;
+    }
+    if (result.reason === "cancelled") return;
+    if (result.reason === "unavailable") {
+      cameraRef.current?.click();
+      return;
+    }
+    toast.error(result.message);
+  }, []);
+
+
 
   const stage = useCallback(
     async (file: File) => {
