@@ -236,6 +236,27 @@ export function GalleryUploader({
     [list.length, max],
   );
 
+  /** Kamera native di APK, input file dengan `capture` di browser. */
+  const takePhoto = useCallback(async () => {
+    if (!canAdd) return;
+    if (!hasNativeCamera()) {
+      cameraRef.current?.click();
+      return;
+    }
+    const result = await pickPhoto("camera");
+    if (result.ok) {
+      setQueue((q) => [...q, result.file]);
+      return;
+    }
+    if (result.reason === "cancelled") return;
+    if (result.reason === "unavailable") {
+      cameraRef.current?.click();
+      return;
+    }
+    toast.error(result.message);
+  }, [canAdd]);
+
+
   const stageCropped = useCallback(
     async (file: File) => {
       setBusy(true);
