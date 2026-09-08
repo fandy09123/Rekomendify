@@ -35,8 +35,11 @@ const defaultOptions = {
     gcTime: 1000 * 60 * 30,
     refetchOnWindowFocus: false,
     refetchOnReconnect: false,
-    retry: (failureCount: number) => {
+    retry: (failureCount: number, error: unknown) => {
       if (typeof navigator !== "undefined" && navigator.onLine === false) return false;
+      // 429/4xx (rate limit, izin, permintaan salah) tidak akan berubah hasilnya
+      // bila diulang — mengulang justru menambah beban saat sedang dibatasi.
+      if (isNonRetryable(error)) return false;
       return failureCount < 1;
     },
   },
