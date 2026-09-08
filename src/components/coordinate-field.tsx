@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { MapPin, Crosshair, ChevronDown, Loader2 } from "lucide-react";
+import { getCurrentPosition } from "@/native/location";
 import { parseCoordinates } from "@/lib/geo";
 
 const DEFAULT_CENTER: [number, number] = [-7.797068, 110.370529]; // Yogyakarta
@@ -129,18 +130,17 @@ export function CoordinateField({
   const valid = !!parseCoordinates(value);
   const dirty = !!(value && String(value).trim());
 
+  // Satu jalur untuk web dan APK: di aplikasi Android memakai plugin lokasi
+  // Capacitor, di browser memakai geolocation biasa. Izin diminta hanya saat
+  // tombol ini ditekan.
   const locate = () => {
-    if (typeof navigator === "undefined" || !navigator.geolocation) return;
     setLocating(true);
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        onChange(`${pos.coords.latitude.toFixed(6)},${pos.coords.longitude.toFixed(6)}`);
-        setLocating(false);
-        setOpen(true);
-      },
-      () => setLocating(false),
-      { enableHighAccuracy: true, timeout: 10000 },
-    );
+    void getCurrentPosition().then((result) => {
+      setLocating(false);
+      if (!result.ok) return;
+      onChange(`${result.position.lat.toFixed(6)},${result.position.lng.toFixed(6)}`);
+      setOpen(true);
+    });
   };
 
   return (
