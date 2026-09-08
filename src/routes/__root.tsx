@@ -19,6 +19,7 @@ import { OfflineBanner } from "@/components/offline-banner";
 import { shouldRegisterServiceWorker } from "@/native/capabilities";
 import { initNativeShell } from "@/native/shell";
 import { attachNativePushHandlers } from "@/native/notifications";
+import { trackAppOpen } from "@/lib/analytics";
 
 
 
