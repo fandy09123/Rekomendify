@@ -14,7 +14,7 @@ import type { CapacitorConfig } from "@capacitor/cli";
  */
 // TENANT_CONFIG_START
 const TENANT = {
-  appId: "com.rekomendify.desamulyosari",
+  appId: "com.rekomendify.desaku",
   appName: "Desa Mulyosari",
   navigationHosts: ["www.rekomendify.com", "rekomendify.com", "*.rekomendify.com"],
 };
