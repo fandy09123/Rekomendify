@@ -162,6 +162,15 @@ function RootComponent() {
     };
   }, []);
 
+  // Aktivitas harian: satu request per perangkat per hari, dan hanya bila
+  // halaman yang dibuka belum mencatat kunjungannya sendiri (jeda singkat
+  // memberi kesempatan halaman wilayah/lokasi mencatat lebih dulu).
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const t = window.setTimeout(() => { void trackAppOpen(); }, 4000);
+    return () => window.clearTimeout(t);
+  }, []);
+
   // UX native: status bar, splash, keyboard, tombol Back Android.
   // Tidak ada permintaan izin dan tidak ada request jaringan di sini.
   useEffect(() => {
