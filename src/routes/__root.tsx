@@ -19,6 +19,7 @@ import { OfflineBanner } from "@/components/offline-banner";
 import { shouldRegisterServiceWorker } from "@/native/capabilities";
 import { initNativeShell } from "@/native/shell";
 import { attachNativePushHandlers } from "@/native/notifications";
+import { trackAppOpen } from "@/lib/analytics";
 
 
 
@@ -159,6 +160,15 @@ function RootComponent() {
       document.removeEventListener("visibilitychange", check);
       navigator.serviceWorker.removeEventListener("controllerchange", onControllerChange);
     };
+  }, []);
+
+  // Aktivitas harian: satu request per perangkat per hari, dan hanya bila
+  // halaman yang dibuka belum mencatat kunjungannya sendiri (jeda singkat
+  // memberi kesempatan halaman wilayah/lokasi mencatat lebih dulu).
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const t = window.setTimeout(() => { void trackAppOpen(); }, 4000);
+    return () => window.clearTimeout(t);
   }, []);
 
   // UX native: status bar, splash, keyboard, tombol Back Android.

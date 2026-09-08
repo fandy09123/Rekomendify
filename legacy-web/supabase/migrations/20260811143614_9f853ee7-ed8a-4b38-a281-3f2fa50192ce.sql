@@ -1,1 +1,0 @@
-REVOKE EXECUTE ON FUNCTION public.activate_ad(uuid, integer) FROM anon;

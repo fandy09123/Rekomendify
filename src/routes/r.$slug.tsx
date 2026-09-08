@@ -2,13 +2,13 @@ import { createFileRoute, notFound, Link, useLocation } from "@tanstack/react-ro
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 import { z } from "zod";
-import { getRegionBySlug, recordVisit, listRegionAds } from "@/lib/public.functions";
+import { getRegionBySlug, listRegionAds } from "@/lib/public.functions";
 import { PromotedBadge } from "@/components/ads";
 import { HomeHero } from "@/components/home-hero";
 import { PageShell, LocationCard } from "@/components/rekomendify";
 import { ArrowLeft, Bookmark, LayoutGrid, MoreHorizontal } from "lucide-react";
 import { setLastRegion, clearLastRegion } from "@/lib/last-region";
-import { shouldRecordVisit } from "@/lib/visit-tracking";
+import { trackDailyVisit } from "@/lib/analytics";
 import { seededShuffle, useSessionSeed } from "@/lib/ordering";
 import { ShareButton } from "@/components/share-button";
 import { PushFollowButton } from "@/components/push-follow-button";
@@ -91,11 +91,9 @@ function RegionPage() {
 
   useEffect(() => {
     if (!data?.region) return;
-    // Satu kunjungan per wilayah per sesi/30 menit — bolak-balik navigasi tidak
-    // lagi menghasilkan INSERT berulang.
-    if (shouldRecordVisit(`region:${data.region.id}:${src ?? "direct"}`)) {
-      recordVisit({ data: { regionId: data.region.id, source: src ?? "direct" } }).catch(() => {});
-    }
+    // Satu kunjungan per wilayah per hari (throttle lokal) — bolak-balik
+    // navigasi maupun buka-tutup aplikasi tidak menghasilkan INSERT berulang.
+    void trackDailyVisit({ regionId: data.region.id, source: (src ?? "direct") as any });
     setLastRegion(data.region.slug);
   }, [data?.region?.id, data?.region?.slug, src]);
 

@@ -7,6 +7,19 @@ import { attachQueryPersistence } from "./lib/query-persist";
 let clientQueryClient: QueryClient | undefined;
 
 /**
+ * Galat yang tidak layak diulang: 429 (rate limit / WAF) dan 4xx lain seperti
+ * izin atau permintaan salah. Mengulanginya hanya menambah beban dan biaya.
+ */
+function isNonRetryable(error: unknown): boolean {
+  const status =
+    (error as { status?: number; statusCode?: number } | null)?.status ??
+    (error as { statusCode?: number } | null)?.statusCode;
+  if (typeof status === "number") return status >= 400 && status < 500;
+  const msg = String((error as Error | null)?.message ?? "");
+  return /\b(429|too many requests|rate limit|401|403)\b/i.test(msg);
+}
+
+/**
  * Kebijakan cache default.
  * - staleTime 5 menit: data publik satu desa jarang berubah, jadi navigasi
  *   bolak-balik (Beranda → Jelajah → Detail → kembali) memakai cache.
@@ -22,8 +35,11 @@ const defaultOptions = {
     gcTime: 1000 * 60 * 30,
     refetchOnWindowFocus: false,
     refetchOnReconnect: false,
-    retry: (failureCount: number) => {
+    retry: (failureCount: number, error: unknown) => {
       if (typeof navigator !== "undefined" && navigator.onLine === false) return false;
+      // 429/4xx (rate limit, izin, permintaan salah) tidak akan berubah hasilnya
+      // bila diulang — mengulang justru menambah beban saat sedang dibatasi.
+      if (isNonRetryable(error)) return false;
       return failureCount < 1;
     },
   },

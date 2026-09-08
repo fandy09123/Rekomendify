@@ -19,11 +19,11 @@ import {
 } from "lucide-react";
 import {
   getLocationBySlug,
-  recordVisit,
   recordEngagement,
   listContextualAds,
 } from "@/lib/public.functions";
-import { shouldRecordVisit, shouldRecordEngagement } from "@/lib/visit-tracking";
+import { shouldRecordEngagement } from "@/lib/visit-tracking";
+import { trackDailyVisit } from "@/lib/analytics";
 import { ContextualAdCard } from "@/components/ads";
 import { mapsDirUrl, waChatUrl } from "@/lib/geo";
 import { motion, AnimatePresence } from "framer-motion";
@@ -103,11 +103,11 @@ function LocationPage() {
   useEffect(() => {
     if (!data?.location) return;
     setSaved(isSaved(data.location.id));
-    if (shouldRecordVisit(`location:${data.location.id}`)) {
-      recordVisit({
-        data: { regionId: data.region.id, locationId: data.location.id, source: "direct" },
-      }).catch(() => {});
-    }
+    void trackDailyVisit({
+      regionId: data.region.id,
+      locationId: data.location.id,
+      source: "direct",
+    });
   }, [data?.location?.id]);
 
   if (!data) return null;
