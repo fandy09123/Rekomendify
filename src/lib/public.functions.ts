@@ -36,12 +36,13 @@ function publicCache(maxAgeSeconds = 300) {
 }
 
 export const listPublishedRegions = createServerFn({ method: "GET" }).handler(async () => {
-  publicCache(600);
+  publicCache(1800);
   const { data, error } = await pub()
     .from("regions")
     .select("id, slug, name, tagline, description, cover_image_url, coordinates")
     .eq("is_published", true)
-    .order("name");
+    .order("name")
+    .limit(100);
   if (error) throw new Error(error.message);
   return data ?? [];
 });
@@ -50,7 +51,7 @@ export const listPublishedRegions = createServerFn({ method: "GET" }).handler(as
 export const getRegionContact = createServerFn({ method: "GET" })
   .validator((data: any) => z.object({ slug: z.string().min(1) }).parse(data))
   .handler(async ({ data }) => {
-    publicCache(600);
+    publicCache(1800);
     const { data: region } = await pub()
       .from("regions")
       .select("id, slug, name, admin_whatsapp")
@@ -72,7 +73,7 @@ const CATEGORY_COLUMNS = "id, region_id, slug, name, icon, color, sort_order";
 export const getRegionBySlug = createServerFn({ method: "GET" })
   .validator((data: any) => z.object({ slug: z.string().min(1) }).parse(data))
   .handler(async ({ data }) => {
-    publicCache(300);
+    publicCache(900);
     const sb = pub();
     const { data: region, error } = await sb
       .from("regions")
@@ -99,7 +100,7 @@ export const getRegionBySlug = createServerFn({ method: "GET" })
 export const getLocationBySlug = createServerFn({ method: "GET" })
   .validator((data: any) => z.object({ regionSlug: z.string(), locationSlug: z.string() }).parse(data))
   .handler(async ({ data }) => {
-    publicCache(300);
+    publicCache(900);
     const sb = pub();
     const { data: region } = await sb.from("regions").select("id, slug, name, admin_whatsapp").eq("slug", data.regionSlug).eq("is_published", true).maybeSingle();
     if (!region) return null;
@@ -109,7 +110,11 @@ export const getLocationBySlug = createServerFn({ method: "GET" })
     const [{ data: location, error }, { data: otherLocations }, { data: couriers }] = await Promise.all([
       sb
         .from("locations")
-        .select("*, categories(id, name, slug, icon, color)")
+        // Proyeksi eksplisit: kolom internal (created_at/updated_at/sort_order/
+        // is_published) tidak pernah dipakai halaman detail, jadi tidak dikirim.
+        .select(
+          "id, region_id, slug, name, description, photo_url, gallery_urls, youtube_url, coordinates, hours, price_range, whatsapp, category_id, is_featured, categories(id, name, slug, icon, color)",
+        )
         .eq("region_id", region.id)
         .eq("slug", data.locationSlug)
         .eq("is_published", true)
@@ -140,6 +145,9 @@ export const getLocationBySlug = createServerFn({ method: "GET" })
 export const resolveQrCode = createServerFn({ method: "GET" })
   .validator((data: any) => z.object({ code: z.string().min(1) }).parse(data))
   .handler(async ({ data }) => {
+    // Status QR jarang berubah; cache singkat di edge memutus enumerasi kode
+    // beruntun agar tidak setiap percobaan menyentuh Postgres.
+    publicCache(60);
     const sb = pub();
     // anon has column-scoped SELECT on qr_assets (id, code, status only),
     // so internal fields (notes, batch_label, created_by) never leak.
@@ -212,7 +220,7 @@ export const recordEngagement = createServerFn({ method: "POST" })
 export const listRegionInfoPosts = createServerFn({ method: "GET" })
   .validator((data: any) => z.object({ regionSlug: z.string().min(1) }).parse(data))
   .handler(async ({ data }) => {
-    publicCache(300);
+    publicCache(900);
     const sb = pub();
     const { data: region } = await sb
       .from("regions")
@@ -227,7 +235,7 @@ export const listRegionInfoPosts = createServerFn({ method: "GET" })
       .eq("region_id", region.id)
       .eq("is_published", true)
       .order("published_at", { ascending: false })
-      .limit(100);
+      .limit(50);
     if (error) throw new Error(error.message);
     return { region, posts: posts ?? [] };
   });
@@ -241,7 +249,7 @@ export const listRegionInfoPosts = createServerFn({ method: "GET" })
 export const listRegionAds = createServerFn({ method: "GET" })
   .validator((data: any) => z.object({ regionSlug: z.string().min(1) }).parse(data))
   .handler(async ({ data }) => {
-    publicCache(120);
+    publicCache(300);
     const sb = pub();
     const { data: region } = await sb
       .from("regions").select("id").eq("slug", data.regionSlug).eq("is_published", true).maybeSingle();
@@ -265,7 +273,7 @@ export const listRegionAds = createServerFn({ method: "GET" })
 export const listContextualAds = createServerFn({ method: "GET" })
   .validator((data: any) => z.object({ hostLocationId: z.string().uuid() }).parse(data))
   .handler(async ({ data }) => {
-    publicCache(120);
+    publicCache(300);
     const { data: ads, error } = await pub()
       .from("ads")
       .select("id, title, description, image_url, location_id, locations!ads_location_id_fkey(id, slug, name, photo_url, price_range)")

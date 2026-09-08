@@ -14,8 +14,8 @@ export const Route = createFileRoute("/sitemap.xml")({
         const sb = createClient<Database>(url, publishableKey, {
           auth: { storage: undefined, persistSession: false, autoRefreshToken: false },
         });
-        const { data: regions } = await sb.from("regions").select("slug, updated_at").eq("is_published", true);
-        const { data: locations } = await sb.from("locations").select("slug, updated_at, regions!inner(slug, is_published)").eq("is_published", true);
+        const { data: regions } = await sb.from("regions").select("slug, updated_at").eq("is_published", true).limit(500);
+        const { data: locations } = await sb.from("locations").select("slug, updated_at, regions!inner(slug, is_published)").eq("is_published", true).limit(5000);
 
         const urls: string[] = [
           `  <url><loc>${BASE_URL}/</loc><changefreq>daily</changefreq><priority>1.0</priority></url>`,
@@ -37,7 +37,7 @@ export const Route = createFileRoute("/sitemap.xml")({
           `</urlset>`,
         ].join("\n");
 
-        return new Response(xml, { headers: { "Content-Type": "application/xml", "Cache-Control": "public, max-age=3600" } });
+        return new Response(xml, { headers: { "Content-Type": "application/xml", "Cache-Control": "public, max-age=0, s-maxage=21600, stale-while-revalidate=86400" } });
       },
     },
   },
