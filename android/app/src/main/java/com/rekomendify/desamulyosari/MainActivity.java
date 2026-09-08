@@ -373,16 +373,28 @@ public class MainActivity extends BridgeActivity {
         }
     }
 
+    /**
+     * Origin yang dipercaya = aset lokal aplikasi (https://localhost, dilayani
+     * Capacitor dari dalam APK). Sejak arsitektur local-first, UI aplikasi tidak
+     * lagi berasal dari website remote; domain tenant tetap diterima hanya untuk
+     * kompatibilitas pemasangan lama yang belum diperbarui.
+     */
     private boolean isTrustedOrigin(@Nullable String url) {
         if (url == null) return false;
         try {
             Uri uri = Uri.parse(url);
             String host = uri.getHost();
             if (host == null) return false;
-            if (!"https".equalsIgnoreCase(uri.getScheme())) return false;
+            String scheme = uri.getScheme();
+            boolean localScheme = "https".equalsIgnoreCase(scheme)
+                    || "http".equalsIgnoreCase(scheme)
+                    || "capacitor".equalsIgnoreCase(scheme);
+            if (localScheme && "localhost".equalsIgnoreCase(host)) return true;
+            if (!"https".equalsIgnoreCase(scheme)) return false;
             return host.equals(TRUSTED_HOST_SUFFIX) || host.endsWith("." + TRUSTED_HOST_SUFFIX);
         } catch (Exception e) {
             return false;
         }
     }
+
 }

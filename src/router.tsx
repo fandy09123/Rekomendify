@@ -1,6 +1,8 @@
 import { QueryClient } from "@tanstack/react-query";
 import { createRouter } from "@tanstack/react-router";
 import { routeTree } from "./routeTree.gen";
+import { attachQueryPersistence } from "./lib/query-persist";
+
 
 let clientQueryClient: QueryClient | undefined;
 
@@ -30,11 +32,23 @@ const defaultOptions = {
   },
 } as const;
 
+let persistenceAttached = false;
+
 export const getRouter = () => {
   const queryClient =
     typeof window !== "undefined"
       ? (clientQueryClient ??= new QueryClient({ defaultOptions }))
       : new QueryClient({ defaultOptions });
+
+  // Cache data publik di perangkat (IndexedDB) supaya aplikasi tetap berisi
+  // saat tanpa koneksi. Hanya di klien, hanya sekali, dan tidak pernah
+  // menghapus cache saat startup.
+  if (typeof window !== "undefined" && !persistenceAttached) {
+    persistenceAttached = true;
+    void attachQueryPersistence(queryClient);
+  }
+
+
 
   const router = createRouter({
     routeTree,

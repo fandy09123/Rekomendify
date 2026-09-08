@@ -5,6 +5,8 @@ import {
   deactivatePushSubscription,
 } from "@/lib/push.functions";
 import { DEFAULT_VAPID_PUBLIC_KEY } from "@/lib/push-config";
+import { isNativeApp } from "@/native/capabilities";
+
 
 /**
  * State langganan Web Push untuk satu perangkat.
@@ -183,6 +185,14 @@ export function usePushSubscription(): PushState {
   useEffect(() => {
     let alive = true;
     (async () => {
+      // Di dalam APK tidak ada Service Worker, jadi Web Push tidak berlaku.
+      // Notifikasi perangkat di APK memakai jalur native (src/native/notifications.ts)
+      // dan hanya aktif setelah konfigurasi push native dipasang. Status tidak
+      // pernah dipalsukan: di APK fitur ini dilaporkan belum tersedia.
+      if (isNativeApp()) {
+        if (alive) setReady(true);
+        return;
+      }
       const ok =
         typeof window !== "undefined" &&
         "serviceWorker" in navigator &&
@@ -195,6 +205,7 @@ export function usePushSubscription(): PushState {
       if (!alive) return;
       setSupported(true);
       setPermission(Notification.permission);
+
 
       try {
         // Public key sudah ada di bundle (aman & memang untuk browser), jadi

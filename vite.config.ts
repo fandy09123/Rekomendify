@@ -20,7 +20,7 @@ export default defineConfig({
   tanstackStart: {
     // Redirect TanStack Start's bundled server entry to src/server.ts (our SSR error wrapper).
     // nitro/vite builds from this
-    server: { entry: "server" },
+    ...(isCapacitorBuild ? {} : { server: { entry: "server" as const } }),
     ...(isCapacitorBuild
       ? {
           // Shell SPA: satu HTML statis yang mem-boot router di klien.
@@ -30,12 +30,15 @@ export default defineConfig({
         }
       : {}),
   },
-  nitro: {
-    preset: isCapacitorBuild
-      ? "static"
-      : process.env.NITRO_PRESET ||
-        (process.env.VERCEL ? "vercel" : "cloudflare-pages"),
-  },
+  // Target APK: nitro dimatikan. Yang dibutuhkan hanya bundel klien + satu
+  // HTML shell hasil prerender; tidak ada server runtime di dalam APK.
+  nitro: isCapacitorBuild
+    ? false
+    : {
+        preset:
+          process.env.NITRO_PRESET ||
+          (process.env.VERCEL ? "vercel" : "cloudflare-pages"),
+      },
   vite: {
     ssr: {
       noExternal: ["leaflet"],
