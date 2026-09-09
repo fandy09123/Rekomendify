@@ -1,6 +1,6 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { listRegionInfoPosts } from "@/lib/public.functions";
+import { listRegionInfoPosts } from "@/lib/public-data";
 import { PageShell } from "@/components/rekomendify";
 import { MediaGallery } from "@/components/media-gallery";
 import { MessageSquare, ArrowLeft, Bell } from "lucide-react";

@@ -1,7 +1,7 @@
 import { createFileRoute, notFound, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
-import { getRegionBySlug } from "@/lib/public.functions";
+import { getRegionBySlug } from "@/lib/public-data";
 import { PageShell, LocationCard } from "@/components/rekomendify";
 import { NearbySwitch } from "@/components/nearby-switch";
 import { seededShuffle, useSessionSeed } from "@/lib/ordering";

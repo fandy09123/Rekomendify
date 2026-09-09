@@ -9,7 +9,7 @@ import {
   ChevronRight, ShieldCheck, LogOut, Store, AlertTriangle, MessageCircle,
 } from "lucide-react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { getRegionContact } from "@/lib/public.functions";
+import { getRegionContact } from "@/lib/public-data";
 import { waChatUrl } from "@/lib/geo";
 import { InstallAppCard } from "@/components/install-app";
 import { UpdateAppCard } from "@/components/update-app";

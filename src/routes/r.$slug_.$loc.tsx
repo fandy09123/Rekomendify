@@ -21,7 +21,7 @@ import {
   getLocationBySlug,
   recordEngagement,
   listContextualAds,
-} from "@/lib/public.functions";
+} from "@/lib/public-data";
 import { shouldRecordEngagement } from "@/lib/visit-tracking";
 import { trackDailyVisit } from "@/lib/analytics";
 import { ContextualAdCard } from "@/components/ads";

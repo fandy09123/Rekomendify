@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { listPublishedRegions } from "@/lib/public.functions";
+import { listPublishedRegions } from "@/lib/public-data";
 import { PageShell } from "@/components/rekomendify";
 import { MapPin } from "lucide-react";
 
