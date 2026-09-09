@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate, Link, notFound } from "@tanstack/react-ro
 import { useEffect, useRef, useState } from "react";
 import { PageShell } from "@/components/rekomendify";
 import { QrCode, AlertTriangle, X, ArrowLeft, Camera } from "lucide-react";
-import { getRegionBySlug } from "@/lib/public.functions";
+import { getRegionBySlug } from "@/lib/public-data";
 
 export const Route = createFileRoute("/r/$slug_/scan")({
   loader: async ({ context, params }) => {

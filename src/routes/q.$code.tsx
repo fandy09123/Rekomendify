@@ -1,5 +1,5 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
-import { resolveQrCode, recordVisit } from "@/lib/public.functions";
+import { resolveQrCode, recordVisit } from "@/lib/public-data";
 
 export const Route = createFileRoute("/q/$code")({
   loader: async ({ params }) => {

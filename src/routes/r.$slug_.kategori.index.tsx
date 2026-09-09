@@ -1,6 +1,6 @@
 import { createFileRoute, notFound, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { getRegionBySlug } from "@/lib/public.functions";
+import { getRegionBySlug } from "@/lib/public-data";
 import { PageShell } from "@/components/rekomendify";
 import { ArrowLeft, LayoutGrid } from "lucide-react";
 

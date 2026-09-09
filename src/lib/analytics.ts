@@ -10,7 +10,7 @@
  * `recordVisit` yang sudah ada (tabel `visits`).
  */
 
-import { recordVisit } from "@/lib/public.functions";
+import { recordVisit } from "@/lib/public-data";
 
 const STORAGE_KEY = "last_supabase_visit";
 

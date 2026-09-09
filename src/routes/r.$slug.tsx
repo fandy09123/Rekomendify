@@ -2,7 +2,7 @@ import { createFileRoute, notFound, Link, useLocation } from "@tanstack/react-ro
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 import { z } from "zod";
-import { getRegionBySlug, listRegionAds } from "@/lib/public.functions";
+import { getRegionBySlug, listRegionAds } from "@/lib/public-data";
 import { PromotedBadge } from "@/components/ads";
 import { HomeHero } from "@/components/home-hero";
 import { PageShell, LocationCard } from "@/components/rekomendify";

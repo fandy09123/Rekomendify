@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import { MapPin, Sparkles, QrCode } from "lucide-react";
 import { motion } from "framer-motion";
 import { z } from "zod";
-import { listPublishedRegions } from "@/lib/public.functions";
+import { listPublishedRegions } from "@/lib/public-data";
 import { PageShell, MascotWelcome } from "@/components/rekomendify";
 import { toast } from "sonner";
 import { isStandalone, consumeLaunchRedirect } from "@/lib/last-region";
