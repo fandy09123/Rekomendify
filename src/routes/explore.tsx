@@ -13,7 +13,13 @@ export const Route = createFileRoute("/explore")({
       { property: "og:description", content: "Pilih wilayah wisata yang ingin kamu kunjungi." },
     ],
   }),
-  loader: ({ context }) => context.queryClient.ensureQueryData({ queryKey: ["regions"], queryFn: () => listPublishedRegions() }),
+  loader: async ({ context }) => {
+    try {
+      return await context.queryClient.ensureQueryData({ queryKey: ["regions"], queryFn: () => listPublishedRegions() });
+    } catch {
+      return [] as Awaited<ReturnType<typeof listPublishedRegions>>;
+    }
+  },
   component: Explore,
 });
 
