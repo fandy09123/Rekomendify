@@ -23,11 +23,19 @@ export const Route = createFileRoute("/")({
       { property: "og:description", content: "Pemandu wisata digital hyperlocal." },
     ],
   }),
-  loader: ({ context }) =>
-    context.queryClient.ensureQueryData({
-      queryKey: ["regions"],
-      queryFn: () => listPublishedRegions(),
-    }),
+  // Kegagalan jaringan (offline, server sedang bermasalah) TIDAK boleh
+  // menjatuhkan seluruh aplikasi ke layar "Halaman gagal dimuat".
+  // Beranda tetap tampil; daftar wilayah diisi ulang oleh useQuery saat online.
+  loader: async ({ context }) => {
+    try {
+      return await context.queryClient.ensureQueryData({
+        queryKey: ["regions"],
+        queryFn: () => listPublishedRegions(),
+      });
+    } catch {
+      return [] as Awaited<ReturnType<typeof listPublishedRegions>>;
+    }
+  },
   component: Home,
 });
 
