@@ -66,7 +66,7 @@ export const Route = createFileRoute("/r/$slug_/$loc")({
     };
   },
   component: LocationPage,
-  errorComponent: ({ error }) => <div className="p-8 text-center text-sm">{error.message}</div>,
+  errorComponent: ({ error }) => <div className="p-8 text-center text-sm">{error instanceof Error ? error.message : String(error)}</div>,
   notFoundComponent: () => <div className="p-8 text-center">Tempat tidak ditemukan.</div>,
 });
 

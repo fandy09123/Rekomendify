@@ -38,7 +38,7 @@ export const Route = createFileRoute("/r/$slug_/kategori/$cat")({
     };
   },
   component: KategoriPage,
-  errorComponent: ({ error }) => <div className="p-8 text-center text-sm">{error.message}</div>,
+  errorComponent: ({ error }) => <div className="p-8 text-center text-sm">{error instanceof Error ? error.message : String(error)}</div>,
   notFoundComponent: () => <div className="p-8 text-center">Kategori tidak ditemukan.</div>,
 });
 
