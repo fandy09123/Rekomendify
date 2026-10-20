@@ -43,13 +43,5 @@ export default defineConfig({
     ssr: {
       noExternal: ["leaflet"],
     },
-    build: {
-      rolldownOptions: {
-        external: ["leaflet", "leaflet/dist/leaflet.css", /^leaflet/],
-      },
-      rollupOptions: {
-        external: ["leaflet", "leaflet/dist/leaflet.css", /^leaflet/],
-      },
-    },
   },
 });
