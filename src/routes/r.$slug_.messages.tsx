@@ -16,12 +16,16 @@ export const Route = createFileRoute("/r/$slug_/messages")({
   },
   head: ({ loaderData }) => ({
     meta: [
+      { property: "og:title", content: `Info Lokal ${loaderData?.region?.name ?? ""} — Rekomendify` },
+      { property: "og:description", content: `Pengumuman & info terbaru dari ${loaderData?.region?.name ?? "wilayah"}.` },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
       { title: `Info Lokal ${loaderData?.region?.name ?? ""} — Rekomendify` },
       { name: "description", content: `Pengumuman & info terbaru dari ${loaderData?.region?.name ?? "wilayah"}.` },
     ],
   }),
   component: RegionMessagesPage,
-  errorComponent: ({ error }) => <div className="p-8 text-center text-sm">{error.message}</div>,
+  errorComponent: ({ error }) => <div className="p-8 text-center text-sm">{error instanceof Error ? error.message : String(error)}</div>,
   notFoundComponent: () => <div className="p-8 text-center">Wilayah tidak ditemukan.</div>,
 });
 

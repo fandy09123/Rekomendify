@@ -9,6 +9,10 @@ export const Route = createFileRoute("/saved")({
   validateSearch: z.object({ region: z.string().optional(), regionName: z.string().optional() }),
   head: () => ({
     meta: [
+      { property: "og:title", content: "Location Tersimpan — Rekomendify" },
+      { property: "og:description", content: "Daftar lokasi yang Anda simpan di perangkat ini." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
       { title: "Location Tersimpan — Rekomendify" },
       { name: "description", content: "Daftar lokasi yang Anda simpan di perangkat ini." },
     ],

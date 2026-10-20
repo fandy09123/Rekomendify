@@ -15,12 +15,16 @@ export const Route = createFileRoute("/r/$slug_/scan")({
   },
   head: ({ loaderData }) => ({
     meta: [
+      { property: "og:title", content: `Scan QR — ${loaderData?.region?.name ?? "Rekomendify"}` },
+      { property: "og:description", content: "Pindai QR resmi Rekomendify untuk membuka halaman lokasi." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
       { title: `Scan QR — ${loaderData?.region?.name ?? "Rekomendify"}` },
       { name: "description", content: "Pindai QR resmi Rekomendify untuk membuka halaman lokasi." },
     ],
   }),
   component: RegionScanPage,
-  errorComponent: ({ error }) => <div className="p-8 text-center text-sm">{error.message}</div>,
+  errorComponent: ({ error }) => <div className="p-8 text-center text-sm">{error instanceof Error ? error.message : String(error)}</div>,
   notFoundComponent: () => <div className="p-8 text-center">Wilayah tidak ditemukan.</div>,
 });
 

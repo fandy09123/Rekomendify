@@ -6,6 +6,10 @@ import { QrCode, AlertTriangle, X, Camera } from "lucide-react";
 export const Route = createFileRoute("/scan")({
   head: () => ({
     meta: [
+      { property: "og:title", content: "Scan QR — Rekomendify" },
+      { property: "og:description", content: "Pindai QR resmi Rekomendify untuk membuka halaman wilayah atau lokasi." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
       { title: "Scan QR — Rekomendify" },
       { name: "description", content: "Pindai QR resmi Rekomendify untuk membuka halaman wilayah atau lokasi." },
     ],

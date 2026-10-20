@@ -10,6 +10,17 @@ import { AdminPushField, dispatchPush, emptyPushDraft, type PushDraft } from "@/
 
 
 export const Route = createFileRoute("/_authenticated/admin/info")({
+  head: () => ({
+    meta: [
+      { title: "Info Admin — Rekomendify" },
+      { name: "description", content: "Kelola pengumuman wilayah Rekomendify." },
+      { property: "og:title", content: "Info Admin — Rekomendify" },
+      { property: "og:description", content: "Kelola pengumuman wilayah Rekomendify." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+      { name: "robots", content: "noindex" },
+    ],
+  }),
   component: AdminInfoPage,
 });
 

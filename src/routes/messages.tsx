@@ -5,6 +5,10 @@ import { MessageSquare, Bell } from "lucide-react";
 export const Route = createFileRoute("/messages")({
   head: () => ({
     meta: [
+      { property: "og:title", content: "Pesan — Rekomendify" },
+      { property: "og:description", content: "Notifikasi dan pesan dari pengelola wilayah Rekomendify." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
       { title: "Pesan — Rekomendify" },
       { name: "description", content: "Notifikasi dan pesan dari pengelola wilayah Rekomendify." },
     ],

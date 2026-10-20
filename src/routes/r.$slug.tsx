@@ -37,11 +37,13 @@ export const Route = createFileRoute("/r/$slug")({
     if (!r) return {};
     return {
       meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
         { title: `${r.name} — Rekomendify` },
         { name: "description", content: r.tagline || r.description || `Jelajahi ${r.name}` },
         { property: "og:title", content: r.name },
         { property: "og:description", content: r.tagline || r.description || "" },
-        ...(r.cover_image_url
+        ...(r.cover_image_url?.startsWith("https://")
           ? [
               { property: "og:image", content: r.cover_image_url },
               { name: "twitter:image", content: r.cover_image_url },
@@ -51,7 +53,7 @@ export const Route = createFileRoute("/r/$slug")({
     };
   },
   component: RegionPage,
-  errorComponent: ({ error }) => <div className="p-8 text-center text-sm">{error.message}</div>,
+  errorComponent: ({ error }) => <div className="p-8 text-center text-sm">{error instanceof Error ? error.message : String(error)}</div>,
   notFoundComponent: () => <div className="p-8 text-center">Wilayah tidak ditemukan.</div>,
 });
 

@@ -8,6 +8,8 @@ import { PasswordInput } from "@/components/password-input";
 export const Route = createFileRoute("/reset-password")({
   head: () => ({
     meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
       { title: "Atur Ulang Password — Rekomendify" },
       { name: "description", content: "Buat password baru untuk akun Admin Wilayah Rekomendify." },
       { property: "og:title", content: "Atur Ulang Password — Rekomendify" },

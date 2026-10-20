@@ -10,6 +10,17 @@ import { LocationCombobox, type LocationOption } from "@/components/location-sel
 
 
 export const Route = createFileRoute("/_authenticated/admin/qr")({
+  head: () => ({
+    meta: [
+      { title: "QR Admin — Rekomendify" },
+      { name: "description", content: "Kelola QR lokasi wilayah Rekomendify." },
+      { property: "og:title", content: "QR Admin — Rekomendify" },
+      { property: "og:description", content: "Kelola QR lokasi wilayah Rekomendify." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+      { name: "robots", content: "noindex" },
+    ],
+  }),
   component: QrPage,
 });
 

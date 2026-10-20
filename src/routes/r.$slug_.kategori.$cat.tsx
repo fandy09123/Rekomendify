@@ -28,6 +28,8 @@ export const Route = createFileRoute("/r/$slug_/kategori/$cat")({
     const desc = `Daftar tempat kategori ${cat?.name ?? ""} di ${loaderData?.region?.name ?? "wilayah"}.`;
     return {
       meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
         { title },
         { name: "description", content: desc },
         { property: "og:title", content: title },
@@ -36,7 +38,7 @@ export const Route = createFileRoute("/r/$slug_/kategori/$cat")({
     };
   },
   component: KategoriPage,
-  errorComponent: ({ error }) => <div className="p-8 text-center text-sm">{error.message}</div>,
+  errorComponent: ({ error }) => <div className="p-8 text-center text-sm">{error instanceof Error ? error.message : String(error)}</div>,
   notFoundComponent: () => <div className="p-8 text-center">Kategori tidak ditemukan.</div>,
 });
 

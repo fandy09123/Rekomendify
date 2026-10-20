@@ -13,6 +13,17 @@ import { slugify } from "@/lib/slugify";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/admin/")({
+  head: () => ({
+    meta: [
+      { title: "Lokasi Admin — Rekomendify" },
+      { name: "description", content: "Kelola lokasi, kategori, dan kurir wilayah Rekomendify." },
+      { property: "og:title", content: "Lokasi Admin — Rekomendify" },
+      { property: "og:description", content: "Kelola lokasi, kategori, dan kurir wilayah Rekomendify." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+      { name: "robots", content: "noindex" },
+    ],
+  }),
   component: AdminDashboard,
 });
 
