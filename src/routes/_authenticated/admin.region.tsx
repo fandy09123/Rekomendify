@@ -9,6 +9,17 @@ import { commitUrl, deleteRemovedImages } from "@/lib/upload-client";
 import { CoordinateField } from "@/components/coordinate-field";
 
 export const Route = createFileRoute("/_authenticated/admin/region")({
+  head: () => ({
+    meta: [
+      { title: "Wilayah Admin — Rekomendify" },
+      { name: "description", content: "Kelola profil wilayah Rekomendify." },
+      { property: "og:title", content: "Wilayah Admin — Rekomendify" },
+      { property: "og:description", content: "Kelola profil wilayah Rekomendify." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+      { name: "robots", content: "noindex" },
+    ],
+  }),
   component: RegionSettingsPage,
 });
 

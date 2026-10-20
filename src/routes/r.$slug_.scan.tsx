@@ -15,6 +15,10 @@ export const Route = createFileRoute("/r/$slug_/scan")({
   },
   head: ({ loaderData }) => ({
     meta: [
+      { property: "og:title", content: `Scan QR — ${loaderData?.region?.name ?? "Rekomendify"}` },
+      { property: "og:description", content: "Pindai QR resmi Rekomendify untuk membuka halaman lokasi." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
       { title: `Scan QR — ${loaderData?.region?.name ?? "Rekomendify"}` },
       { name: "description", content: "Pindai QR resmi Rekomendify untuk membuka halaman lokasi." },
     ],

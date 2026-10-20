@@ -17,6 +17,8 @@ export const Route = createFileRoute("/")({
   validateSearch: homeSearch,
   head: () => ({
     meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
       { title: "Rekomendify — Pemandu Wisata Digital" },
       { name: "description", content: "Pemandu wisata digital hyperlocal. Scan QR atau pilih wilayah, dipandu Cak Mulyo & Jeng Sari." },
       { property: "og:title", content: "Rekomendify" },

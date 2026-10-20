@@ -37,11 +37,13 @@ export const Route = createFileRoute("/r/$slug")({
     if (!r) return {};
     return {
       meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
         { title: `${r.name} — Rekomendify` },
         { name: "description", content: r.tagline || r.description || `Jelajahi ${r.name}` },
         { property: "og:title", content: r.name },
         { property: "og:description", content: r.tagline || r.description || "" },
-        ...(r.cover_image_url
+        ...(r.cover_image_url?.startsWith("https://")
           ? [
               { property: "og:image", content: r.cover_image_url },
               { name: "twitter:image", content: r.cover_image_url },

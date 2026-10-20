@@ -7,6 +7,17 @@ import { BarChart3 } from "lucide-react";
 const AnalyticsReport = lazy(() => import("@/components/admin-analytics-report"));
 
 export const Route = createFileRoute("/_authenticated/admin/analytics")({
+  head: () => ({
+    meta: [
+      { title: "Analytics Admin — Rekomendify" },
+      { name: "description", content: "Laporan aktivitas wilayah Rekomendify." },
+      { property: "og:title", content: "Analytics Admin — Rekomendify" },
+      { property: "og:description", content: "Laporan aktivitas wilayah Rekomendify." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+      { name: "robots", content: "noindex" },
+    ],
+  }),
   component: AnalyticsPage,
 });
 

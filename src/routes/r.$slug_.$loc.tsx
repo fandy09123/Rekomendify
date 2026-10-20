@@ -50,11 +50,13 @@ export const Route = createFileRoute("/r/$slug_/$loc")({
     if (!l) return {};
     return {
       meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
         { title: `${l.name} — Rekomendify` },
         { name: "description", content: l.description?.slice(0, 155) || `Kunjungi ${l.name}` },
         { property: "og:title", content: l.name },
         { property: "og:description", content: l.description?.slice(0, 155) || "" },
-        ...(l.photo_url
+        ...(l.photo_url?.startsWith("https://")
           ? [
               { property: "og:image", content: l.photo_url },
               { name: "twitter:image", content: l.photo_url },

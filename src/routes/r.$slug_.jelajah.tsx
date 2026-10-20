@@ -24,6 +24,10 @@ export const Route = createFileRoute("/r/$slug_/jelajah")({
   },
   head: ({ loaderData }) => ({
     meta: [
+      { property: "og:title", content: `Jelajah ${loaderData?.region?.name ?? ""} — Rekomendify` },
+      { property: "og:description", content: `Cari tempat, kuliner, dan wisata di ${loaderData?.region?.name ?? "wilayah"}.` },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
       { title: `Jelajah ${loaderData?.region?.name ?? ""} — Rekomendify` },
       { name: "description", content: `Cari tempat, kuliner, dan wisata di ${loaderData?.region?.name ?? "wilayah"}.` },
     ],

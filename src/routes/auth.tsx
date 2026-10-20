@@ -6,7 +6,16 @@ import { Sparkles, ArrowLeft } from "lucide-react";
 import { PasswordInput } from "@/components/password-input";
 
 export const Route = createFileRoute("/auth")({
-  head: () => ({ meta: [{ title: "Masuk Admin Wilayah — Rekomendify" }] }),
+  head: () => ({
+    meta: [
+      { property: "og:title", content: "Masuk Admin Wilayah — Rekomendify" },
+      { property: "og:description", content: "Masuk atau daftar sebagai admin wilayah Rekomendify." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+      { title: "Masuk Admin Wilayah — Rekomendify" },
+      { name: "description", content: "Masuk atau daftar sebagai admin wilayah Rekomendify." },
+    ],
+  }),
   component: AuthPage,
 });
 

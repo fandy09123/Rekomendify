@@ -12,6 +12,17 @@ import { AdminModal } from "@/components/admin-modal";
 
 
 export const Route = createFileRoute("/_authenticated/admin/iklan")({
+  head: () => ({
+    meta: [
+      { title: "Promosi Admin — Rekomendify" },
+      { name: "description", content: "Kelola promosi wilayah Rekomendify." },
+      { property: "og:title", content: "Promosi Admin — Rekomendify" },
+      { property: "og:description", content: "Kelola promosi wilayah Rekomendify." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+      { name: "robots", content: "noindex" },
+    ],
+  }),
   component: AdminAdsPage,
 });
 

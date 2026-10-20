@@ -28,6 +28,8 @@ export const Route = createFileRoute("/r/$slug_/kategori/$cat")({
     const desc = `Daftar tempat kategori ${cat?.name ?? ""} di ${loaderData?.region?.name ?? "wilayah"}.`;
     return {
       meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
         { title },
         { name: "description", content: desc },
         { property: "og:title", content: title },
