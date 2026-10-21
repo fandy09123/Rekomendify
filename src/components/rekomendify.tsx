@@ -10,6 +10,7 @@ import {
 import { motion } from "framer-motion";
 import { useEffect, useMemo, useState, memo } from "react";
 import mascots from "@/assets/mascots.png";
+import { COMPANY_NAME } from "@/lib/contact";
 
 function useRegionContext(): string | null {
   const loc = useLocation();

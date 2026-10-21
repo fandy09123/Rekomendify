@@ -55,11 +55,11 @@ export const PRIVACY_POLICY: PrivacyPolicyData = {
   privacyUrl: "https://www.rekomendify.com/privasi",
 
   contact: {
-    managerName: "Fandy Alfian Zulvain",
+    managerName: "PT REKOMENDASI PILIHAN UTAMA",
     appName: "Rekomendify",
     website: "https://www.rekomendify.com",
     privacyPage: "https://www.rekomendify.com/privasi",
-    email: "alfianfendi2@gmail.com",
+    email: "rekomendasipilihanutama@gmail.com",
     address: "Jl. Raya Pagerwojo, Desa Mulyosari Kecamatan Pagerwojo, Kabupaten Tulungagung, Jawa Timur 66262",
     deletionEmailSubject: "Permohonan Penghapusan Akun Admin - [Nama Desa/Wilayah]",
   },
@@ -129,11 +129,11 @@ export const PRIVACY_POLICY: PrivacyPolicyData = {
         "Pengelola resmi dan penanggung jawab perlindungan data Rekomendify dapat dihubungi melalui identitas berikut:",
       ],
       bullets: [
-        "Nama Pengelola: Fandy Alfian Zulvain",
+        "Nama Pengelola: PT REKOMENDASI PILIHAN UTAMA",
         "Nama Aplikasi: Rekomendify",
         "Website Resmi: https://www.rekomendify.com",
         "Halaman Kebijakan Privasi: https://www.rekomendify.com/privasi",
-        "Email Kontak Privasi: alfianfendi2@gmail.com",
+        "Email Kontak Privasi: rekomendasipilihanutama@gmail.com",
         "Alamat Pengelola: Jl. Raya Pagerwojo, Kecamatan Pagerwojo, Kabupaten Tulungagung, Jawa Timur 66262",
       ],
     },
@@ -359,7 +359,7 @@ export const PRIVACY_POLICY: PrivacyPolicyData = {
       title: "PENGELOLAAN DAN PENGHAPUSAN AKUN ADMIN / MITRA",
       paragraphs: [
         "Aplikasi ini tidak memiliki pendaftaran mandiri publik (non-account-based service untuk pengguna umum). Akses akun hanya diterbitkan terbatas untuk Admin Wilayah / Partner Resmi (BUMDes/Perangkat Desa) berdasarkan Perjanjian Kerja Sama (PKS).",
-        "Bagi Admin/Mitra yang ingin mengajukan penghapusan akun beserta data operasional, permohonan resmi dapat dikirim melalui email ke alfianfendi2@gmail.com dengan subjek: 'Permohonan Penghapusan Akun Admin - [Nama Desa/Wilayah]'. Data kredensial akan dihapus/dianonimkan dalam waktu maksimal 30 hari kerja.",
+        "Bagi Admin/Mitra yang ingin mengajukan penghapusan akun beserta data operasional, permohonan resmi dapat dikirim melalui email ke rekomendasipilihanutama@gmail.com dengan subjek: 'Permohonan Penghapusan Akun Admin - [Nama Desa/Wilayah]'. Data kredensial akan dihapus/dianonimkan dalam waktu maksimal 30 hari kerja.",
       ],
     },
     {
@@ -423,7 +423,7 @@ export const PRIVACY_POLICY: PrivacyPolicyData = {
       number: 27,
       title: "HAK PENGGUNA",
       paragraphs: [
-        "Pengguna berhak mengetahui pemrosesan data, meminta informasi, memperbaiki data, serta mengajukan pertanyaan terkait privasi melalui email alfianfendi2@gmail.com.",
+        "Pengguna berhak mengetahui pemrosesan data, meminta informasi, memperbaiki data, serta mengajukan pertanyaan terkait privasi melalui email rekomendasipilihanutama@gmail.com.",
       ],
     },
     {
@@ -442,8 +442,8 @@ export const PRIVACY_POLICY: PrivacyPolicyData = {
         "Untuk pertanyaan atau keluhan privasi, silakan hubungi:",
       ],
       bullets: [
-        "Pengelola: Fandy Alfian Zulvain",
-        "Email: alfianfendi2@gmail.com",
+        "Pengelola: PT REKOMENDASI PILIHAN UTAMA",
+        "Email: rekomendasipilihanutama@gmail.com",
         "Alamat: Jl. Raya Pagerwojo, Kecamatan Pagerwojo, Kabupaten Tulungagung, Jawa Timur 66262",
       ],
     },

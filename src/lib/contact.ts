@@ -14,3 +14,7 @@ export const WA_MESSAGES = {
 } as const;
 
 export const APP_VERSION = "1.0.0";
+
+/** Identitas perusahaan pengelola — satu sumber untuk footer, homepage, tentang, bantuan. */
+export const COMPANY_NAME = "PT REKOMENDASI PILIHAN UTAMA";
+export const COMPANY_EMAIL = "rekomendasipilihanutama@gmail.com";
