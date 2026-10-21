@@ -35,9 +35,7 @@ export default defineConfig({
   nitro: isCapacitorBuild
     ? false
     : {
-        preset:
-          process.env.NITRO_PRESET ||
-          (process.env.VERCEL ? "vercel" : "cloudflare-pages"),
+        preset: process.env.NITRO_PRESET || (process.env.VERCEL ? "vercel" : "cloudflare-pages"),
       },
   vite: {
     ssr: {
