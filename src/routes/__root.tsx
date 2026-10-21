@@ -69,10 +69,11 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover" },
       { name: "theme-color", content: "#c2603a" },
       { title: "Rekomendify — Pemandu Wisata Digital Lokal" },
-      { name: "description", content: "Jelajahi wilayah wisata, UMKM, dan tempat menarik di sekitar Anda dengan pemandu digital Cak Mulyo & Jeng Sari." },
+      { name: "description", content: "Rekomendify adalah pemandu wisata digital hyperlocal yang dikembangkan oleh PT Rekomendasi Pilihan Utama. Jelajahi wilayah wisata, UMKM, dan tempat menarik." },
       { property: "og:title", content: "Rekomendify — Pemandu Wisata Digital" },
       { property: "og:description", content: "Buka, dituntun, jelajahi wilayah." },
       { property: "og:type", content: "website" },
+      { property: "og:site_name", content: "Rekomendify" },
       { name: "twitter:card", content: "summary_large_image" },
       // iOS PWA
       { name: "apple-mobile-web-app-capable", content: "yes" },
@@ -88,6 +89,34 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" },
+    ],
+    // Structured data global: hubungan WebSite Rekomendify dengan pengelolanya.
+    // Hanya memakai URL website yang benar-benar live; tanpa alamat/logo/telepon
+    // yang belum terverifikasi.
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@graph": [
+            {
+              "@type": "Organization",
+              "@id": "https://www.rekomendify.com/#organization",
+              "name": "PT REKOMENDASI PILIHAN UTAMA",
+              "legalName": "PT REKOMENDASI PILIHAN UTAMA",
+              "url": "https://www.rekomendify.com",
+            },
+            {
+              "@type": "WebSite",
+              "@id": "https://www.rekomendify.com/#website",
+              "url": "https://www.rekomendify.com",
+              "name": "Rekomendify",
+              "inLanguage": "id",
+              "publisher": { "@id": "https://www.rekomendify.com/#organization" },
+            },
+          ],
+        }),
+      },
     ],
   }),
   shellComponent: RootShell,
