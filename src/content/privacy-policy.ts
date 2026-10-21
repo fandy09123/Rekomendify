@@ -55,7 +55,7 @@ export const PRIVACY_POLICY: PrivacyPolicyData = {
   privacyUrl: "https://www.rekomendify.com/privasi",
 
   contact: {
-    managerName: "Fandy Alfian Zulvain",
+    managerName: "PT REKOMENDASI PILIHAN UTAMA",
     appName: "Rekomendify",
     website: "https://www.rekomendify.com",
     privacyPage: "https://www.rekomendify.com/privasi",
@@ -129,7 +129,7 @@ export const PRIVACY_POLICY: PrivacyPolicyData = {
         "Pengelola resmi dan penanggung jawab perlindungan data Rekomendify dapat dihubungi melalui identitas berikut:",
       ],
       bullets: [
-        "Nama Pengelola: Fandy Alfian Zulvain",
+        "Nama Pengelola: PT REKOMENDASI PILIHAN UTAMA",
         "Nama Aplikasi: Rekomendify",
         "Website Resmi: https://www.rekomendify.com",
         "Halaman Kebijakan Privasi: https://www.rekomendify.com/privasi",
@@ -442,7 +442,7 @@ export const PRIVACY_POLICY: PrivacyPolicyData = {
         "Untuk pertanyaan atau keluhan privasi, silakan hubungi:",
       ],
       bullets: [
-        "Pengelola: Fandy Alfian Zulvain",
+        "Pengelola: PT REKOMENDASI PILIHAN UTAMA",
         "Email: rekomendasipilihanutama@gmail.com",
         "Alamat: Jl. Raya Pagerwojo, Kecamatan Pagerwojo, Kabupaten Tulungagung, Jawa Timur 66262",
       ],

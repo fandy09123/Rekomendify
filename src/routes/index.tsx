@@ -1,11 +1,12 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect } from "react";
-import { MapPin, Sparkles, QrCode } from "lucide-react";
+import { MapPin, Sparkles, ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
 import { z } from "zod";
 import { listPublishedRegions } from "@/lib/public-data";
-import { PageShell, MascotWelcome } from "@/components/rekomendify";
+import { PageShell, GlobalFooter } from "@/components/rekomendify";
+import { COMPANY_NAME } from "@/lib/contact";
 import { toast } from "sonner";
 import { isStandalone, consumeLaunchRedirect } from "@/lib/last-region";
 import { ShareButton } from "@/components/share-button";
@@ -19,11 +20,13 @@ export const Route = createFileRoute("/")({
     meta: [
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { title: "Rekomendify — Pemandu Wisata Digital" },
-      { name: "description", content: "Pemandu wisata digital hyperlocal. Scan QR atau pilih wilayah, dipandu Cak Mulyo & Jeng Sari." },
-      { property: "og:title", content: "Rekomendify" },
-      { property: "og:description", content: "Pemandu wisata digital hyperlocal." },
+      { property: "og:url", content: "/" },
+      { title: "Rekomendify — Platform Digital oleh PT Rekomendasi Pilihan Utama" },
+      { name: "description", content: "Pemandu wisata digital hyperlocal yang dikembangkan oleh PT Rekomendasi Pilihan Utama. Scan QR atau pilih wilayah, jelajahi tempat menarik di sekitar Anda." },
+      { property: "og:title", content: "Rekomendify — oleh PT Rekomendasi Pilihan Utama" },
+      { property: "og:description", content: "Pemandu wisata digital hyperlocal yang dikembangkan dan dikelola oleh PT Rekomendasi Pilihan Utama." },
     ],
+    links: [{ rel: "canonical", href: "/" }],
   }),
   // Kegagalan jaringan (offline, server sedang bermasalah) TIDAK boleh
   // menjatuhkan seluruh aplikasi ke layar "Halaman gagal dimuat".
@@ -103,12 +106,6 @@ function Home() {
             Pemandu wisata digital. Scan QR di tempat wisata, atau pilih wilayah di bawah.
           </p>
 
-          <div className="mt-6">
-            <MascotWelcome
-              name="Cak Mulyo & Jeng Sari"
-              message="Monggo, pilih wilayah yang ingin Anda jelajahi. Saya temani sampai tujuan!"
-            />
-          </div>
 
           <p className="mt-8 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Wilayah tersedia</p>
           <div className="mt-3 space-y-3">
@@ -130,15 +127,17 @@ function Home() {
             ))}
           </div>
 
-          <div className="mt-10 rounded-2xl bg-card p-4">
-            <div className="flex items-center gap-3">
-              <QrCode className="size-6 text-primary" />
-              <div>
-                <p className="text-sm font-semibold">Punya QR Rekomendify?</p>
-                <p className="text-xs text-muted-foreground">Pindai dengan kamera HP — langsung masuk ke halaman wilayah.</p>
-              </div>
-            </div>
+          <div className="mt-10 rounded-2xl border border-border bg-card p-4">
+            <p className="text-xs leading-relaxed text-muted-foreground">
+              Rekomendify merupakan salah satu produk digital yang dikembangkan dan dikelola oleh{" "}
+              <span className="font-semibold text-foreground">{COMPANY_NAME}</span>.
+            </p>
+            <Link to="/tentang" className="mt-2 inline-flex items-center gap-1 text-xs font-semibold text-primary">
+              Tentang Rekomendify <ArrowRight className="size-3.5" />
+            </Link>
           </div>
+
+          <GlobalFooter />
         </div>
       </div>
     </PageShell>
