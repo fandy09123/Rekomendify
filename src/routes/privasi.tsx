@@ -8,7 +8,7 @@
 // =====================================================
 
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { PageShell } from "@/components/rekomendify";
+import { PageShell, GlobalFooter } from "@/components/rekomendify";
 import {
   ArrowLeft, Bell, MapPin, Camera, HardDrive, BarChart3, Check, Loader2,
   ShieldCheck, FileText, ChevronDown, ChevronUp, Mail, MapPin as LocationIcon, ExternalLink
@@ -281,6 +281,8 @@ function Privacy() {
         <p className="mt-4 text-center text-xs leading-relaxed text-muted-foreground">
           Pengaturan izin sepenuhnya ada di perangkat Anda dan dapat diubah kapan saja.
         </p>
+
+        <GlobalFooter />
 
         {/* Privacy Policy Modal Component */}
         <PrivacyPolicyModal open={modalOpen} onOpenChange={setModalOpen} />

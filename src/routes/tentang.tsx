@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { PageShell } from "@/components/rekomendify";
-import { ArrowLeft, Compass, Eye, Target, Sparkles } from "lucide-react";
-import { APP_VERSION } from "@/lib/contact";
+import { PageShell, GlobalFooter } from "@/components/rekomendify";
+import { ArrowLeft, Compass, Eye, Target, Sparkles, Building2 } from "lucide-react";
+import { APP_VERSION, COMPANY_NAME } from "@/lib/contact";
 
 export const Route = createFileRoute("/tentang")({
   head: () => ({
@@ -45,6 +45,17 @@ function About() {
 
         <section className="mt-4 rounded-2xl border border-border bg-card p-5">
           <div className="flex items-center gap-2">
+            <Building2 className="size-4 text-primary" />
+            <h2 className="font-display text-lg">Pengelola</h2>
+          </div>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Rekomendify merupakan salah satu produk digital yang dikembangkan dan dikelola oleh{" "}
+            <span className="font-semibold text-foreground">{COMPANY_NAME}</span>.
+          </p>
+        </section>
+
+        <section className="mt-4 rounded-2xl border border-border bg-card p-5">
+          <div className="flex items-center gap-2">
             <Eye className="size-4 text-primary" />
             <h2 className="font-display text-lg">Visi</h2>
           </div>
@@ -68,6 +79,8 @@ function About() {
         <p className="mt-6 flex items-center justify-center gap-1.5 text-xs text-muted-foreground">
           <Sparkles className="size-3.5" /> Rekomendify versi {APP_VERSION}
         </p>
+
+        <GlobalFooter />
       </div>
     </PageShell>
   );

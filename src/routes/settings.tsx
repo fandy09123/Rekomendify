@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { PageShell } from "@/components/rekomendify";
+import { PageShell, GlobalFooter } from "@/components/rekomendify";
 import { supabase } from "@/integrations/supabase/client";
 import { useAdminSession } from "@/hooks/use-admin-session";
 import { waLink, WA_MESSAGES, APP_VERSION } from "@/lib/contact";
@@ -106,6 +106,8 @@ function Settings() {
         )}
 
         <p className="mt-8 text-center text-xs text-muted-foreground">Rekomendify versi {APP_VERSION}</p>
+
+        <GlobalFooter />
       </div>
     </PageShell>
   );

@@ -1,8 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { PageShell } from "@/components/rekomendify";
-import { ArrowLeft, ChevronDown, MessageCircle } from "lucide-react";
-import { waLink, WA_MESSAGES } from "@/lib/contact";
+import { PageShell, GlobalFooter } from "@/components/rekomendify";
+import { ArrowLeft, ChevronDown, MessageCircle, Mail } from "lucide-react";
+import { waLink, WA_MESSAGES, COMPANY_NAME, COMPANY_EMAIL } from "@/lib/contact";
 
 export const Route = createFileRoute("/bantuan")({
   head: () => ({
@@ -76,8 +76,9 @@ function Help() {
         </div>
 
         <div className="mt-5 rounded-2xl border border-border bg-card p-5 text-center">
-          <p className="text-sm font-semibold">Butuh bantuan lebih lanjut?</p>
-          <p className="mt-1 text-xs text-muted-foreground">Tim Rekomendify siap membantu lewat WhatsApp.</p>
+          <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">{COMPANY_NAME}</p>
+          <p className="mt-1.5 text-sm font-semibold">Butuh bantuan lebih lanjut?</p>
+          <p className="mt-1 text-xs text-muted-foreground">Tim Rekomendify siap membantu lewat WhatsApp atau email.</p>
           <a
             href={waLink(WA_MESSAGES.bantuan)}
             target="_blank"
@@ -86,7 +87,15 @@ function Help() {
           >
             <MessageCircle className="size-4" /> Hubungi lewat WhatsApp
           </a>
+          <div className="mt-3 flex items-center justify-center gap-1.5 text-xs text-muted-foreground">
+            <Mail className="size-3.5 shrink-0" />
+            <a href={`mailto:${COMPANY_EMAIL}`} className="break-all hover:underline">
+              {COMPANY_EMAIL}
+            </a>
+          </div>
         </div>
+
+        <GlobalFooter />
       </div>
     </PageShell>
   );
