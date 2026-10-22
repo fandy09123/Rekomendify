@@ -227,3 +227,20 @@ export const LocationCard = memo(function LocationCard({
     </Link>
   );
 });
+
+/**
+ * Footer global untuk halaman global (beranda, pengaturan, tentang, bantuan,
+ * privasi). Sengaja TIDAK dipasang di dalam PageShell agar halaman wilayah
+ * tidak ikut berubah. Tahun hak cipta dikelola dinamis.
+ */
+export const GlobalFooter = memo(function GlobalFooter() {
+  const year = new Date().getFullYear();
+  return (
+    <footer className="mt-10 border-t border-border pt-4 text-center">
+      <p className="break-words text-[11px] leading-relaxed text-muted-foreground">
+        © {year} Rekomendify. All rights reserved. Dikelola oleh{" "}
+        <span className="font-medium text-foreground/80">{COMPANY_NAME}</span>.
+      </p>
+    </footer>
+  );
+});
