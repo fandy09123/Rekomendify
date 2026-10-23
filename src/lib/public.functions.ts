@@ -143,21 +143,18 @@ export const getLocationBySlug = createServerFn({ method: "GET" })
       // Dulu 4 request REST per render (region, detail, rekomendasi, kurir) —
       // sekarang 2: wilayah + kurir disematkan pada query lokasi utama lewat
       // `regions!inner`, jadi halaman detail memicu separuh volume log API.
-      const [{ data: row, error }, { data: otherLocations }] = await Promise.all([
-        sb
-          .from("locations")
-          // Proyeksi eksplisit: kolom internal (created_at/updated_at/sort_order/
-          // is_published) tidak pernah dipakai halaman detail, jadi tidak dikirim.
-          .select(
-            "id, region_id, slug, name, description, photo_url, gallery_urls, youtube_url, coordinates, hours, price_range, whatsapp, category_id, is_featured, categories(id, name, slug, icon, color), regions!inner(id, slug, name, admin_whatsapp, couriers(id, name, whatsapp, coordinates, is_active))",
-          )
-          .eq("regions.slug", data.regionSlug)
-          .eq("regions.is_published", true)
-          .eq("slug", data.locationSlug)
-          .eq("is_published", true)
-          .maybeSingle(),
-        // Hanya sebagian yang benar-benar dirender sebagai rekomendasi.
-      ]);
+      const { data: row, error } = await sb
+        .from("locations")
+        // Proyeksi eksplisit: kolom internal (created_at/updated_at/sort_order/
+        // is_published) tidak pernah dipakai halaman detail, jadi tidak dikirim.
+        .select(
+          "id, region_id, slug, name, description, photo_url, gallery_urls, youtube_url, coordinates, hours, price_range, whatsapp, category_id, is_featured, categories(id, name, slug, icon, color), regions!inner(id, slug, name, admin_whatsapp, couriers(id, name, whatsapp, coordinates, is_active))",
+        )
+        .eq("regions.slug", data.regionSlug)
+        .eq("regions.is_published", true)
+        .eq("slug", data.locationSlug)
+        .eq("is_published", true)
+        .maybeSingle();
       if (error) throw new Error(error.message);
       if (!row) return null;
       const region = row.regions;
