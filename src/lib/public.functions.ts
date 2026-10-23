@@ -157,16 +157,20 @@ export const getLocationBySlug = createServerFn({ method: "GET" })
           .eq("is_published", true)
           .maybeSingle(),
         // Hanya sebagian yang benar-benar dirender sebagai rekomendasi.
-        sb
-          .from("locations")
-          .select("id, slug, name, photo_url, hours, price_range, is_featured, category_id, categories(id, name, slug, icon, color)")
-          .eq("region_id", sb.from("locations") ? undefined : undefined)
-          .limit(0),
       ]);
       if (error) throw new Error(error.message);
       if (!row) return null;
       const region = row.regions;
       if (!region) return null;
+      // Query kedua: rekomendasi dalam wilayah yang sama, kecuali lokasi ini.
+      const { data: otherLocations } = await sb
+        .from("locations")
+        .select("id, slug, name, photo_url, hours, price_range, is_featured, category_id, categories(id, name, slug, icon, color)")
+        .eq("region_id", row.region_id)
+        .eq("is_published", true)
+        .neq("slug", data.locationSlug)
+        .order("is_featured", { ascending: false })
+        .limit(12);
       return {
         region,
         location: row,
