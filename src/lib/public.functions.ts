@@ -143,30 +143,31 @@ export const getLocationBySlug = createServerFn({ method: "GET" })
       // Dulu 4 request REST per render (region, detail, rekomendasi, kurir) —
       // sekarang 2: wilayah + kurir disematkan pada query lokasi utama lewat
       // `regions!inner`, jadi halaman detail memicu separuh volume log API.
-      const [{ data: row, error }, { data: otherLocations }] = await Promise.all([
-        sb
-          .from("locations")
-          // Proyeksi eksplisit: kolom internal (created_at/updated_at/sort_order/
-          // is_published) tidak pernah dipakai halaman detail, jadi tidak dikirim.
-          .select(
-            "id, region_id, slug, name, description, photo_url, gallery_urls, youtube_url, coordinates, hours, price_range, whatsapp, category_id, is_featured, categories(id, name, slug, icon, color), regions!inner(id, slug, name, admin_whatsapp, couriers(id, name, whatsapp, coordinates, is_active))",
-          )
-          .eq("regions.slug", data.regionSlug)
-          .eq("regions.is_published", true)
-          .eq("slug", data.locationSlug)
-          .eq("is_published", true)
-          .maybeSingle(),
-        // Hanya sebagian yang benar-benar dirender sebagai rekomendasi.
-        sb
-          .from("locations")
-          .select("id, slug, name, photo_url, hours, price_range, is_featured, category_id, categories(id, name, slug, icon, color)")
-          .eq("region_id", sb.from("locations") ? undefined : undefined)
-          .limit(0),
-      ]);
+      const { data: row, error } = await sb
+        .from("locations")
+        // Proyeksi eksplisit: kolom internal (created_at/updated_at/sort_order/
+        // is_published) tidak pernah dipakai halaman detail, jadi tidak dikirim.
+        .select(
+          "id, region_id, slug, name, description, photo_url, gallery_urls, youtube_url, coordinates, hours, price_range, whatsapp, category_id, is_featured, categories(id, name, slug, icon, color), regions!inner(id, slug, name, admin_whatsapp, couriers(id, name, whatsapp, coordinates, is_active))",
+        )
+        .eq("regions.slug", data.regionSlug)
+        .eq("regions.is_published", true)
+        .eq("slug", data.locationSlug)
+        .eq("is_published", true)
+        .maybeSingle();
       if (error) throw new Error(error.message);
       if (!row) return null;
       const region = row.regions;
       if (!region) return null;
+      // Query kedua: rekomendasi dalam wilayah yang sama, kecuali lokasi ini.
+      const { data: otherLocations } = await sb
+        .from("locations")
+        .select("id, slug, name, photo_url, hours, price_range, is_featured, category_id, categories(id, name, slug, icon, color)")
+        .eq("region_id", row.region_id)
+        .eq("is_published", true)
+        .neq("slug", data.locationSlug)
+        .order("is_featured", { ascending: false })
+        .limit(12);
       return {
         region,
         location: row,
