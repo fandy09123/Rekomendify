@@ -6,6 +6,9 @@ Disallow: /reset-password
 Disallow: /q/
 Disallow: /scan
 Disallow: /_serverFn/
+# Crawler yang patuh robots.txt pun dibatasi kecepatannya: insiden Log
+# Ingestion Okt 2026 terjadi karena crawl berkecepatan mesin (~2 halaman/detik).
+Crawl-delay: 10
 
 # Crawler agresif yang tidak memberi nilai bagi panduan wisata desa ini.
 # Mereka menyedot seluruh halaman berulang kali dan membebani kuota gratis.
