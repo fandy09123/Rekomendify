@@ -35,7 +35,7 @@ interface TurnstileWidgetProps {
 // Kunci Pengujian Resmi dari Cloudflare Docs:
 // 3x00000000000000000000FF = Selalu memunculkan kotak centang "Verify you are human"
 // 1x00000000000000000000AA = Selalu lolos otomatis (pass)
-const CLOUDFLARE_TEST_INTERACTIVE_KEY = "3x00000000000000000000FF";
+const CLOUDFLARE_TEST_INTERACTIVE_KEY = "0x4AAAAAAGTsbvjzR7DYHECk";
 
 export const TurnstileWidget = forwardRef<TurnstileWidgetRef, TurnstileWidgetProps>(
   function TurnstileWidget({ onVerify, onExpire, className = "", theme = "auto" }, ref) {
