@@ -45,6 +45,12 @@ function NotFoundComponent() {
 function ErrorComponent({ error, reset }: { error: unknown; reset: () => void }) {
   console.error(error);
   const router = useRouter();
+  const localErrorDetails =
+    import.meta.env.DEV
+      ? error instanceof Error
+        ? `${error.name}: ${error.message}`
+        : String(error)
+      : null;
   useEffect(() => {
     reportLovableError(error, { boundary: "tanstack_root_error_component" });
   }, [error]);
@@ -53,6 +59,16 @@ function ErrorComponent({ error, reset }: { error: unknown; reset: () => void })
       <div className="max-w-md text-center">
         <h1 className="font-display text-2xl">Halaman gagal dimuat</h1>
         <p className="mt-2 text-sm text-muted-foreground">Coba muat ulang halaman.</p>
+        {localErrorDetails && (
+          <details className="mt-4 rounded-lg border border-border bg-muted/50 p-3 text-left">
+            <summary className="cursor-pointer text-sm font-semibold text-foreground">
+              Detail error untuk pemeriksaan lokal
+            </summary>
+            <pre className="mt-2 max-h-48 overflow-auto whitespace-pre-wrap break-words text-xs text-muted-foreground">
+              {localErrorDetails}
+            </pre>
+          </details>
+        )}
         <div className="mt-6 flex flex-wrap justify-center gap-2">
           <button onClick={() => { router.invalidate(); reset(); }} className="rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground hover:opacity-90">Coba lagi</button>
           <a href="/" className="rounded-full border border-border bg-card px-5 py-2.5 text-sm font-semibold hover:bg-accent/10">Beranda</a>
