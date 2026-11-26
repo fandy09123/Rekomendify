@@ -163,25 +163,39 @@ export async function recordVisit(args: {
   };
 }) {
   if (!native()) return fn.recordVisit(args);
-  const { error } = await sb().from("visits").insert({
-    region_id: args.data.regionId ?? null,
-    location_id: args.data.locationId ?? null,
-    qr_assignment_id: args.data.qrAssignmentId ?? null,
-    source: args.data.source ?? "direct",
-  });
+  if (!args?.data?.regionId) {
+    return { ok: true, skipped: true };
+  }
+  const { error } = await sb()
+    .from("visits")
+    .insert({
+      region_id: args.data.regionId,
+      location_id: args.data.locationId ?? null,
+      qr_assignment_id: args.data.qrAssignmentId ?? null,
+      source: args.data.source ?? "direct",
+    });
   if (error) throw new Error(error.message);
   return { ok: true };
 }
 
 export async function recordEngagement(args: {
-  data: { regionId: string; locationId?: string | null; kind: "whatsapp" | "gmaps" | "save" | "share" };
+  data: {
+    regionId: string;
+    locationId?: string | null;
+    kind: "whatsapp" | "gmaps" | "save" | "share";
+  };
 }) {
   if (!native()) return fn.recordEngagement(args);
-  const { error } = await sb().from("engagement_events").insert({
-    region_id: args.data.regionId,
-    location_id: args.data.locationId ?? null,
-    kind: args.data.kind,
-  });
+  if (!args?.data?.regionId) {
+    return { ok: true, skipped: true };
+  }
+  const { error } = await sb()
+    .from("engagement_events")
+    .insert({
+      region_id: args.data.regionId,
+      location_id: args.data.locationId ?? null,
+      kind: args.data.kind,
+    });
   if (error) throw new Error(error.message);
   return { ok: true };
 }

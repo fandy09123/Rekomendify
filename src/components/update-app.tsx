@@ -24,16 +24,20 @@ export function UpdateAppCard() {
     setStatus("checking");
 
     try {
-      let reg = await navigator.serviceWorker.getRegistration();
-      if (!reg) {
-        reg = await navigator.serviceWorker.register("/sw.js", { scope: "/", updateViaCache: "none" });
+      let initialReg = await navigator.serviceWorker.getRegistration();
+      if (!initialReg) {
+        initialReg = await navigator.serviceWorker.register("/sw.js", {
+          scope: "/",
+          updateViaCache: "none",
+        });
       }
 
-      if (!reg) {
+      if (!initialReg) {
         setStatus("up-to-date");
         return;
       }
 
+      const reg = initialReg;
       let updateFound = false;
 
       // Listener bila ada Service Worker baru yang sedang di-install
@@ -54,7 +58,7 @@ export function UpdateAppCard() {
 
       reg.addEventListener("updatefound", handleUpdateFound, { once: true });
 
-      // Jika sudah ada Service Worker baru yang menggantung di state `waiting`
+      // Jika sudah ada Service Worker baru yang menggantung di state waiting
       if (reg.waiting) {
         updateFound = true;
         reg.waiting.postMessage({ type: "SKIP_WAITING" });
@@ -70,12 +74,11 @@ export function UpdateAppCard() {
 
       // Berikan jeda toleransi untuk mendeteksi updatefound jika ada perbedaan
       setTimeout(() => {
-        reg?.removeEventListener("updatefound", handleUpdateFound);
-        if (!updateFound && !reg?.waiting && !reg?.installing) {
+        reg.removeEventListener("updatefound", handleUpdateFound);
+        if (!updateFound && !reg.waiting && !reg.installing) {
           setStatus("up-to-date");
         }
       }, 1500);
-
     } catch (err) {
       console.warn("[PWA Update] Gagal memeriksa pembaruan:", err);
       setStatus("error");
@@ -91,6 +94,7 @@ export function UpdateAppCard() {
 
       {status === "idle" && (
         <button
+          type="button"
           onClick={handleUpdate}
           className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground transition hover:opacity-90"
         >
@@ -100,6 +104,7 @@ export function UpdateAppCard() {
 
       {status === "checking" && (
         <button
+          type="button"
           disabled
           className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-primary/60 px-4 py-2 text-xs font-semibold text-primary-foreground opacity-80 cursor-not-allowed"
         >
@@ -121,6 +126,7 @@ export function UpdateAppCard() {
             <span>Aplikasi sudah menggunakan versi terbaru.</span>
           </div>
           <button
+            type="button"
             onClick={handleUpdate}
             className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1.5 text-xs font-medium hover:bg-accent/10 transition"
           >
@@ -133,9 +139,12 @@ export function UpdateAppCard() {
         <div className="mt-3 space-y-2">
           <div className="flex items-start gap-2 text-xs font-semibold text-amber-600 dark:text-amber-400">
             <AlertCircle className="size-4 shrink-0 mt-0.5" />
-            <span>Pembaruan belum berhasil. Pastikan koneksi internet Anda baik lalu coba lagi.</span>
+            <span>
+              Pembaruan belum berhasil. Pastikan koneksi internet Anda baik lalu coba lagi.
+            </span>
           </div>
           <button
+            type="button"
             onClick={handleUpdate}
             className="inline-flex items-center gap-1.5 rounded-full bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground transition hover:opacity-90"
           >
